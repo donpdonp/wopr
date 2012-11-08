@@ -1,0 +1,6 @@
+{
+  "db" : {  url: "jdbc:postgresql:wopr",
+            username: "",
+            password: ""
+         }
+}
