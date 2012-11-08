@@ -16,16 +16,18 @@ object Daemon {
 
     val system = ActorSystem("WOPR")
     val dispatch = system.actorOf(Props[Dispatch], name = "dispatch")
-    dispatch ! "multi"
     dispatch ! ExchangeBalance
   }
 
   def db_setup(config: JValue) {
-    println("db: " + (config \ "db"))
     Class.forName("org.postgresql.Driver")
+    val JString(driver_url) = (config \ "db" \ "url")
+    val JString(username) = (config \ "db" \ "username")
+    val JString(password) = (config \ "db" \ "password")
+
     SessionFactory.concreteFactory = Some(()=>
      Session.create(
-      java.sql.DriverManager.getConnection("..."),
+      java.sql.DriverManager.getConnection(driver_url, username, password),
        new PostgreSqlAdapter))
   }
 }
