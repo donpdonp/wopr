@@ -21,7 +21,7 @@ object Daemon {
   }
 
   def db_setup(config: JValue) {
-    println("db: " + (config \ "key"))
+    println("db: " + (config \ "db"))
     Class.forName("org.postgresql.Driver")
     SessionFactory.concreteFactory = Some(()=>
      Session.create(
