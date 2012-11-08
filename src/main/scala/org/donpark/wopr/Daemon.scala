@@ -14,7 +14,7 @@ object Daemon {
     val system = ActorSystem("WOPR")
     val dispatch = system.actorOf(Props[Dispatch], name = "dispatch")
     dispatch ! "multi"
-    dispatch ! "threaded"
+    dispatch ! ExchangeBalance
   }
 }
 
