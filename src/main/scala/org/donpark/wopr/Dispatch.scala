@@ -5,6 +5,8 @@ import org.donpark.wopr.models._
 import java.sql.Timestamp
 import org.squeryl.PrimitiveTypeMode._
 import scalaj.http.{Http, HttpOptions}
+import org.json4s._
+import org.json4s.native.JsonMethods._
 
 class Dispatch extends Actor {
   def receive = {
@@ -15,9 +17,10 @@ class Dispatch extends Actor {
         val shot = Daemon.db.snapshots.lookup(2)
         println(shot.get.created_at)
       }
-      println(Http("http://news.ycombinator.com").
-        options(HttpOptions.connTimeout(5000)).asString)
-
+      val ticker = Http("https://mtgox.com/api/0/data/ticker.php").
+                      options(HttpOptions.connTimeout(5000)).asString
+      val tj = parse(ticker)
+      println(tj)
     }
     case _ => println("huh?")
   }
