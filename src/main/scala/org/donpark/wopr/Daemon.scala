@@ -5,8 +5,11 @@ import org.json4s.native.JsonMethods._
 import akka.actor.{Props, ActorSystem}
 import org.squeryl.{SessionFactory, Session}
 import org.squeryl.adapters.PostgreSqlAdapter
+import org.donpark.wopr.models.Db
 
 object Daemon {
+  val db = new Db;
+
   def main(args: Array[String]) {
 
     val configFile = io.Source.fromFile("config/settings.json").mkString
@@ -20,7 +23,6 @@ object Daemon {
   }
 
   def db_setup(config: JValue) {
-    Class.forName("org.postgresql.Driver")
     val JString(driver_url) = (config \ "db" \ "url")
     val JString(username) = (config \ "db" \ "username")
     val JString(password) = (config \ "db" \ "password")
