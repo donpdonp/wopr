@@ -1,4 +1,4 @@
 RBX=`which rbx`
 
-$RBX -S bundle exec $RBX lib/wopr/cli.rb $*
+$RBX lib/wopr/cli.rb $*
 
