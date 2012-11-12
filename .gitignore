@@ -1,3 +1,8 @@
-project/
-target/
-config/settings.json
+/.bundle/
+/.rbx/
+/bin/
+/gems/
+/tmp/
+/Gemfile.lock
+
+
