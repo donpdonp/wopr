@@ -1,0 +1,6 @@
+Bluepill.application("wopr", Opts) do |app|
+  app.process("sleeper") do |process|
+    process.start_command = "/bin/sleep 60"
+    process.pid_file = "#{BASE_DIR}/.bluepill/pids/wopr/wopr.pid"
+  end
+end
