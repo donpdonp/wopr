@@ -1,6 +1,6 @@
 Bluepill.application("wopr", Opts) do |app|
-  app.process("sleeper") do |process|
-    process.start_command = "/bin/sleep 60"
+  app.process("woprd") do |process|
+    process.start_command = "#{RUBY} lib/wopr/woprd.rb"
     process.pid_file = "#{BASE_DIR}/.bluepill/pids/wopr/wopr.pid"
     process.daemonize = true
   end

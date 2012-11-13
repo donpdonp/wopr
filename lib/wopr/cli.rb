@@ -4,9 +4,13 @@ require 'json'
 
 BASE_DIR = File.expand_path(File.dirname(__FILE__))+"/../../"
 SETTINGS = JSON.load(File.open(File.join(BASE_DIR,"config/settings.json")))
+RUBY = File.join(RbConfig::CONFIG['bindir'], RbConfig::CONFIG['ruby_install_name'])
 
+# Log file
 log_dir = File.join(BASE_DIR, "log")
 Dir.mkdir(log_dir) unless File.directory?(log_dir)
+
+# Bluepill
 Opts = {:base_dir => File.join(BASE_DIR,".bluepill"),
         :log_file => File.join(log_dir,"bluepill")}
 bluepill = Bluepill::Controller.new(Opts)
