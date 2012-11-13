@@ -22,8 +22,8 @@ end
 
 if ARGV[0] == 'quit'
   if running
-    bluepill.handle_command('neuron', 'stop')
-    bluepill.handle_command('neuron', 'quit')
+    bluepill.handle_command('wopr', 'stop')
+    bluepill.handle_command('wopr', 'quit')
   else
     puts "Not running"
   end
