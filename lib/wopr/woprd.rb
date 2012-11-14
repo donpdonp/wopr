@@ -14,6 +14,7 @@ class Woprd
 
   def initialize
     zmq_setup
+    @rdb_config = SETTINGS["woprd"]["rethinkdb"]
     db_setup
   end
 
@@ -27,14 +28,22 @@ class Woprd
     @zsub.connect(@addr)
   end
 
+  def db
+    self.class.r.db(@rdb_config["db"])
+  end
+
   def db_setup
-    config = SETTINGS["woprd"]["rethinkdb"]
-    self.class.r.connect(config["host"], config["port"])
-    unless self.class.r.db_list.run.include?(config["db"])
-      self.class.r.db_create(config["db"]).run
-      puts "Warning: created database #{config["db"]}"
+    self.class.r.connect(@rdb_config["host"], @rdb_config["port"])
+    unless self.class.r.db_list.run.include?(@rdb_config["db"])
+      self.class.r.db_create(@rdb_config["db"]).run
+      puts "Warning: created database #{@rdb_config["db"]}"
     end
-    puts "Connected to #{config["host"]}:#{config["db"]}"
+    puts "Connected to #{@rdb_config["host"]}:#{@rdb_config["db"]}"
+
+    unless db.table_list.run.include?('exchanges')
+      db.table_create('exchanges').run
+      puts "Warning: created table 'exchanges'"
+    end
   end
 
   def run
