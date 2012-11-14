@@ -1,7 +1,21 @@
 Bluepill.application("wopr", Opts) do |app|
   app.process("woprd") do |process|
-    process.start_command = "#{RUBY} lib/wopr/woprd.rb"
+    process.start_command = "#{RUBY} ./lib/wopr/woprd.rb"
     process.pid_file = "#{BASE_DIR}/.bluepill/pids/wopr/wopr.pid"
     process.daemonize = true
+    process.stop_grace_time = 3.seconds
+    process.working_dir = BASE_DIR
+  end
+
+  Dir[BASE_DIR+"/lib/exchanges/*rb"].each do |dpath|
+    exchange = File.basename(dpath, '.rb')
+    app.process(exchange) do |process|
+      process.group = "exchanges"
+      process.start_command = "#{RUBY} -I#{BASE_DIR+"/lib"} #{BASEDIR+"/lib/exchanges/"+exchange+".rb"}"
+      process.pid_file = "#{BASE_DIR}/.bluepill/pids/neuron/exchange-#{exchange}.pid"
+      process.daemonize = true
+      process.stdout = process.stderr = File.join(BASE_DIR,"log/#{exchange}")
+      process.checks :cpu_usage, :every => 10.seconds, :below => 50, :times => 3
+    end
   end
 end
