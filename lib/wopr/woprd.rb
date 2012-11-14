@@ -29,9 +29,12 @@ class Woprd
 
   def db_setup
     config = SETTINGS["woprd"]["rethinkdb"]
-    self.class.r.connect(config["host"],
-              config["port"],
-              config["db"])
+    self.class.r.connect(config["host"], config["port"])
+    unless self.class.r.db_list.run.include?(config["db"])
+      self.class.r.db_create(config["db"]).run
+      puts "Warning: created database #{config["db"]}"
+    end
+    puts "Connected to #{config["host"]}:#{config["db"]}"
   end
 
   def run
