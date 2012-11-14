@@ -2,6 +2,7 @@ Bluepill.application("wopr", Opts) do |app|
   app.process("woprd") do |process|
     process.start_command = "#{RUBY} ./lib/wopr/woprd.rb"
     process.pid_file = "#{BASE_DIR}/.bluepill/pids/wopr/wopr.pid"
+    process.stdout = process.stderr = File.join(BASE_DIR,"log/woprd")
     process.daemonize = true
     process.stop_grace_time = 3.seconds
     process.working_dir = BASE_DIR
