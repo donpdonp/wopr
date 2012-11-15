@@ -1,3 +1,5 @@
+require 'celluloid/zmq'
+
 module Wopr
   module ExchangeActor
     include Celluloid::ZMQ
@@ -11,11 +13,12 @@ module Wopr
       @addr = SETTINGS["wopr"]["woprd"]["addr"]
       @zsub = SubSocket.new
       puts "exchange sub on #{@addr}"
+      @zsub.subscribe('E')
       @zsub.connect(@addr)
     end
 
     def run
-      loop { handle_message! @zsub.read }
+      loop { handle_message(@zsub.read) }
     end
 
     def handle_message(msg)

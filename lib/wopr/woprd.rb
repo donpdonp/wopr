@@ -53,7 +53,7 @@ module Wopr
     end
 
     def run
-      loop { handle_message! @zsub.read }
+      loop { handle_message(@zsub.read) }
     end
 
     def handle_message(msg)

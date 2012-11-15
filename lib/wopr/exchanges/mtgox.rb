@@ -1,6 +1,5 @@
 require 'bundler/setup'
 require 'httparty'
-require 'celluloid/zmq'
 require 'wopr/exchange_actor'
 require 'json'
 
