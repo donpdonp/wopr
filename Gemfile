@@ -1,8 +1,9 @@
 source :rubygems
 
 gem 'bluepill'
-gem 'celluloid'
+gem 'websocket'
 gem 'celluloid-zmq'
+gem 'celluloid-io'
 gem 'httparty'
 gem 'rethinkdb'
 gem 'faraday'

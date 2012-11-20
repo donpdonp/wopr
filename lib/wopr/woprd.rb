@@ -1,7 +1,10 @@
 require 'bundler/setup'
 require 'celluloid/zmq'
+require 'celluloid/io'
 require 'json'
 require 'rethinkdb'
+require 'socket'
+require 'websocket'
 
 BASE_DIR = File.expand_path(File.dirname(__FILE__)+"/../../")
 SETTINGS = JSON.load(File.open(File.join(BASE_DIR,"config/settings.json")))
@@ -57,14 +60,34 @@ module Wopr
       end
     end
 
-    def run
-      loop { handle_message(@zsub.read) }
+    def zmq_mainloop
+      puts "zmq listening"
+      loop { handle_message!(@zsub.read) }
     end
 
     def handle_message(msg)
       puts "#{@addr}: #{msg}"
     end
   end
+
+  class WoprSocket
+    include Celluloid::IO
+
+    def websocket_mainloop
+      puts "Socket 2000 opening"
+      server = Celluloid::IO::TCPServer.new 'localhost', 2000
+      loop do
+        puts "Socket 2000 listening"
+        client = server.accept    # Wait for a client to connect
+        puts "Socket 2000 client accepted"
+        client.write "Time is #{Time.now}"
+      end
+    end
+  end
 end
 
-Wopr::Woprd.new.run
+wopr = Wopr::Woprd.new
+wopr.zmq_mainloop!
+wsock = Wopr::WoprSocket.new
+wsock.websocket_mainloop
+puts "end-of-the-world"

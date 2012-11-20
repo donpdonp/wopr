@@ -7,10 +7,11 @@ require 'faraday'
 module Wopr
   module Exchanges
     class Mtgox
+      include Celluloid::ZMQ
       include Wopr::ExchangeActor
 
       def initialize
-        zmq_setup
+        zmq_setup(PubSocket.new, SubSocket.new)
       end
 
       def depth_poll(conn, from_currency, to_currency)
@@ -30,13 +31,18 @@ module Wopr
         end
         msgs.each {|msg| @zpub.write('E'+msg.to_json)}
       end
+
+      def offer_pump
+        net = Faraday.new(request:{timeout:10})
+        puts "mtgox http"
+        data = depth_poll(net, 'btc', 'usd')
+        puts "mtgox pump #{data["asks"].size}"
+        offers(data, 'asks')
+      end
     end
   end
 end
 
 e1 = Wopr::Exchanges::Mtgox.new
-net = Faraday.new(request:{timeout:10})
-puts "mtgox http"
-data = e1.depth_poll(net, 'btc', 'usd')
-puts "mtgox pump"
-e1.offers(data, 'asks')
+e1.async.offer_pump
+e1.run

@@ -6,16 +6,14 @@ SETTINGS = JSON.load(File.open(File.join(BASE_DIR,"config/settings.json")))
 
 module Wopr
   module ExchangeActor
-    include Celluloid::ZMQ
-
-    def zmq_setup
+    def zmq_setup(pub, sub)
       @addr = SETTINGS["wopr"]["exchange"]["addr"]
-      @zpub = PubSocket.new
+      @zpub = pub
       puts "exchange pub on #{@addr}"
       @zpub.bind(@addr)
 
       @addr = SETTINGS["wopr"]["woprd"]["addr"]
-      @zsub = SubSocket.new
+      @zsub = sub
       puts "exchange sub on #{@addr}"
       @zsub.subscribe('W')
       @zsub.connect(@addr)
