@@ -74,13 +74,27 @@ module Wopr
     include Celluloid::IO
 
     def websocket_mainloop
-      puts "Socket 2000 opening"
-      server = Celluloid::IO::TCPServer.new 'localhost', 2000
+      puts "Socket 2000 listening"
+      server = TCPServer.new 'localhost', 2000
       loop do
-        puts "Socket 2000 listening"
-        client = server.accept    # Wait for a client to connect
-        puts "Socket 2000 client accepted"
-        client.write "Time is #{Time.now}"
+        handle_connection! server.accept
+      end
+    end
+
+    def handle_connection(client)
+      puts "Socket 2000 client accepted"
+      handshake = WebSocket::Handshake::Server.new
+      begin
+        client.write "Hello. Time is #{Time.now}\n"
+        until handshake.finished?
+          puts "not finished"
+          msg = client.readpartial(4096)
+          puts "read: #{msg}"
+          handshake << msg
+        end
+        puts "handshake valid: #{handshake.valid?}"
+      rescue EOFError
+        puts "client EOF"
       end
     end
   end
