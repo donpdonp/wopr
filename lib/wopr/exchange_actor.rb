@@ -1,4 +1,8 @@
 require 'celluloid/zmq'
+require 'json'
+
+BASE_DIR = File.expand_path(File.dirname(__FILE__)+"/../../")
+SETTINGS = JSON.load(File.open(File.join(BASE_DIR,"config/settings.json")))
 
 module Wopr
   module ExchangeActor
@@ -13,7 +17,7 @@ module Wopr
       @addr = SETTINGS["wopr"]["woprd"]["addr"]
       @zsub = SubSocket.new
       puts "exchange sub on #{@addr}"
-      @zsub.subscribe('E')
+      @zsub.subscribe('W')
       @zsub.connect(@addr)
     end
 

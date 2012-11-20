@@ -28,6 +28,7 @@ module Wopr
       @addr = SETTINGS["wopr"]["exchange"]["addr"]
       @zsub = SubSocket.new
       puts "woprd sub on #{@addr}"
+      @zsub.subscribe('E')
       @zsub.connect(@addr)
     end
 
