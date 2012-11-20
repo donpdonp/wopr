@@ -36,20 +36,24 @@ module Wopr
     end
 
     def db_setup
-      self.class.r.connect(@rdb_config["host"], @rdb_config["port"])
-      unless self.class.r.db_list.run.include?(@rdb_config["db"])
-        self.class.r.db_create(@rdb_config["db"]).run
-        puts "Warning: created database #{@rdb_config["db"]}"
-      end
-      puts "Connected to #{@rdb_config["host"]}:#{@rdb_config["db"]}"
+      begin
+        puts "Connecting to #{@rdb_config["host"]}:#{@rdb_config["db"]}"
+        self.class.r.connect(@rdb_config["host"], @rdb_config["port"])
+        unless self.class.r.db_list.run.include?(@rdb_config["db"])
+          self.class.r.db_create(@rdb_config["db"]).run
+          puts "Warning: created database #{@rdb_config["db"]}"
+        end
 
-      unless db.table_list.run.include?('exchanges')
-        db.table_create('exchanges').run
-        puts "Warning: created table 'exchanges'"
-      end
+        unless db.table_list.run.include?('exchanges')
+          db.table_create('exchanges').run
+          puts "Warning: created table 'exchanges'"
+        end
 
-      ecount = db.table('exchanges').count.run
-      puts "#{ecount} exchanges found"
+        ecount = db.table('exchanges').count.run
+        puts "#{ecount} exchanges found"
+      rescue Errno::ENETUNREACH => e
+        puts "! Failed connecting to #{@rdb_config["host"]}:#{@rdb_config["db"]}"
+      end
     end
 
     def run
