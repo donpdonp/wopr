@@ -119,6 +119,8 @@ end
 
 wopr = Wopr::Woprd.new
 wopr.zmq_mainloop!
+
 wsock = Wopr::WoprSocket.new
 wsock.websocket_mainloop
+
 puts "end-of-the-world"

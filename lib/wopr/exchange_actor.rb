@@ -6,8 +6,7 @@ SETTINGS = JSON.load(File.open(File.join(BASE_DIR,"config/settings.json")))
 
 module Wopr
   module ExchangeActor
-    def zmq_setup(pub, sub)
-      class_name = self.class.name.split('::').last
+    def zmq_setup(pub, sub, class_name)
       puts "loading data for #{class_name}"
       me = db.table('exchanges').filter({"name"=>class_name}).run.first
       puts me.inspect
