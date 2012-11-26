@@ -3,14 +3,17 @@ require 'httparty'
 require 'wopr/exchange_actor'
 require 'json'
 require 'faraday'
+require 'rethinkdb'
 
 module Wopr
   module Exchanges
     class Mtgox
       include Celluloid::ZMQ
       include Wopr::ExchangeActor
+      extend RethinkDB::Shortcuts
 
       def initialize
+        db_setup(self.class.r)
         zmq_setup(PubSocket.new, SubSocket.new)
       end
 

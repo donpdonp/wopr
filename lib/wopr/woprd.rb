@@ -17,9 +17,9 @@ module Wopr
     extend RethinkDB::Shortcuts
 
     def initialize
-      zmq_setup
       @rdb_config = SETTINGS["wopr"]["rethinkdb"]
       db_setup
+      zmq_setup
     end
 
     def zmq_setup
@@ -28,11 +28,12 @@ module Wopr
       puts "woprd pub on #{@addr}"
       @zpub.bind(@addr)
 
-      @addr = SETTINGS["wopr"]["exchange"]["addr"]
       @zsub = SubSocket.new
-      puts "woprd sub on #{@addr}"
       @zsub.subscribe('E')
-      @zsub.connect(@addr)
+      db.table('exchanges').run.each do |exchange|
+        puts "woprd sub #{exchange["name"]} on #{exchange["zmq_pub"]}"
+        @zsub.connect(exchange["zmq_pub"])
+      end
     end
 
     def db
@@ -87,9 +88,8 @@ module Wopr
       begin
         client.write "Hello. Time is #{Time.now}\n"
         until handshake.finished?
-          puts "not finished"
           msg = client.readpartial(4096)
-          puts "read: #{msg}"
+          puts "#{msg}"
           handshake << msg
         end
         puts "handshake valid: #{handshake.valid?}"

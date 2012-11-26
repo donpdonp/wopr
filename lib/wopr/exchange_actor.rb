@@ -7,16 +7,28 @@ SETTINGS = JSON.load(File.open(File.join(BASE_DIR,"config/settings.json")))
 module Wopr
   module ExchangeActor
     def zmq_setup(pub, sub)
-      @addr = SETTINGS["wopr"]["exchange"]["addr"]
+      class_name = self.class.name.split('::').last
+      puts "loading data for #{class_name}"
+      me = db.table('exchanges').filter({"name"=>class_name}).run.first
+      puts me.inspect
       @zpub = pub
-      puts "exchange pub on #{@addr}"
-      @zpub.bind(@addr)
+      puts "exchange pub on #{me["zmq_pub"]}"
+      @zpub.bind(me["zmq_pub"])
 
       @addr = SETTINGS["wopr"]["woprd"]["addr"]
       @zsub = sub
-      puts "exchange sub on #{@addr}"
+      puts "wopr sub on #{@addr}"
       @zsub.subscribe('W')
       @zsub.connect(@addr)
+    end
+
+    def db_setup(r)
+      rdb_config = SETTINGS["wopr"]["rethinkdb"]
+      r.connect(rdb_config["host"], rdb_config["port"])
+    end
+
+    def db
+      self.class.r.db(SETTINGS["wopr"]["rethinkdb"]["db"])
     end
 
     def run
