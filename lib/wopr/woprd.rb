@@ -86,15 +86,32 @@ module Wopr
       puts "Socket 2000 client accepted"
       handshake = WebSocket::Handshake::Server.new
       begin
-        client.write "Hello. Time is #{Time.now}\n"
         until handshake.finished?
           msg = client.readpartial(4096)
-          puts "#{msg}"
           handshake << msg
         end
         puts "handshake valid: #{handshake.valid?}"
+        if handshake.valid?
+          client.write handshake.to_s
+        end
+
+        loop { read_frame(client, handshake.version) }
       rescue EOFError
         puts "client EOF"
+      end
+    end
+
+    def read_frame(client, version)
+      frame = WebSocket::Frame::Incoming::Server.new(:version => version)
+      loop do
+        data = client.readpartial(4096)
+        frame << data
+        msg = frame.next
+        if msg
+          puts "got MSG: #{msg}"
+        end
+        out_frame = WebSocket::Frame::Outgoing::Server.new(:version => version, :data => "Hell0", :type => :text)
+        client.write out_frame.to_s
       end
     end
   end

@@ -1,0 +1,15 @@
+<body>
+  <div>
+    WOPR
+    <script>
+var exampleSocket = new WebSocket("ws://localhost:2000");
+exampleSocket.onopen = function (event) {
+  console.log('onopen!')
+  exampleSocket.send("Here's some text that the server is urgently awaiting!");
+};
+exampleSocket.onmessage = function (event) {
+  console.log(event.data);
+}
+    </script>
+  </div>
+</body>
