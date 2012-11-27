@@ -15,7 +15,7 @@ wopr_sock.onopen = function (event) {
 };
 wopr_sock.onmessage = function (event) {
   console.log(event.data);
-  $('#output').append(event.data)
+  $('#output').append('<div>'+event.data+'</div>')
 }
     </script>
   </div>

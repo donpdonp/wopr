@@ -20,6 +20,12 @@ module Wopr
       @rdb_config = SETTINGS["wopr"]["rethinkdb"]
       db_setup
       zmq_setup
+      websocket_setup
+    end
+
+    def websocket_setup
+      @wsock = Wopr::WoprSocket.new
+      @wsock.websocket_mainloop!
     end
 
     def zmq_setup
@@ -68,6 +74,7 @@ module Wopr
 
     def handle_message(msg)
       puts "#{@addr}: #{msg}"
+      @wsock.send_all(msg)
     end
   end
 
@@ -85,7 +92,7 @@ module Wopr
 
     def handle_connection(client)
       client_addr = client.peeraddr(:numeric)
-      client_id = "#{client_addr[3]}-#{client_addr[1]}"
+      client_id = "#{client_addr[3]}:#{client_addr[1]}"
       puts "Socket 2000 client #{client_id} #{@clients.size}"
       handshake = WebSocket::Handshake::Server.new
       begin
@@ -99,7 +106,7 @@ module Wopr
                                         ws_version: handshake.version})
           puts "Responding to handshake"
           client.write handshake.to_s
-          loop { read_frame(client, handshake.version) }
+          loop { read_frame(client_id) }
         end
 
       rescue EOFError
@@ -108,14 +115,15 @@ module Wopr
       end
     end
 
-    def read_frame(client, version)
-      frame = WebSocket::Frame::Incoming::Server.new(:version => version)
+    def read_frame(client_id)
+      client = @clients[client_id]
+      frame = WebSocket::Frame::Incoming::Server.new(:version => client[:ws_version])
       loop do
-        data = client.readpartial(4096)
+        data = client[:socket].readpartial(4096)
         frame << data
         msg = frame.next
         if msg
-          puts "got MSG #{msg.type}: #{msg}"
+          puts "#{client_id} MSG #{msg.type}#{msg.type == :text ? ": #{msg}" : "."}"
         end
       end
     end
@@ -124,7 +132,7 @@ module Wopr
       @clients.each do |client_id, client|
         puts "Sending to #{client_id}"
         out_frame = WebSocket::Frame::Outgoing::Server.new(:version => client[:ws_version],
-                                                           :data => "Hell0 #{client_id}",
+                                                           :data => json,
                                                            :type => :text)
         client[:socket].write out_frame.to_s
       end
@@ -135,12 +143,6 @@ end
 wopr = Wopr::Woprd.new
 wopr.zmq_mainloop!
 
-wsock = Wopr::WoprSocket.new
-wsock.websocket_mainloop!
-
-loop do
-  sleep 1
-  wsock.send_all("")
-end
-
+puts "Server ready."
+loop { sleep 500 }
 puts "end-of-the-world"
