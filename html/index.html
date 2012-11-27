@@ -1,3 +1,6 @@
+<head>
+  <script src="js/jquery-1.8.3.min.js"></script>
+</head>
 <body>
   <div>
     WOPR
@@ -12,6 +15,7 @@ wopr_sock.onopen = function (event) {
 };
 wopr_sock.onmessage = function (event) {
   console.log(event.data);
+  $('#output').append(event.data)
 }
     </script>
   </div>
