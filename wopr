@@ -1,4 +1,4 @@
 RBX=`which rbx`
 
-$RBX lib/wopr/cli.rb $*
+$RBX -Ilib lib/wopr/cli.rb $*
 

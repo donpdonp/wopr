@@ -1,15 +1,9 @@
-require 'bundler/setup'
 require 'celluloid/zmq'
 require 'celluloid/io'
 require 'json'
 require 'rethinkdb'
 require 'socket'
 require 'websocket'
-
-BASE_DIR = File.expand_path(File.dirname(__FILE__)+"/../../")
-SETTINGS = JSON.load(File.open(File.join(BASE_DIR,"config/settings.json")))
-
-Celluloid::ZMQ.init
 
 module Wopr
   class Woprd
@@ -139,9 +133,3 @@ module Wopr
     end
   end
 end
-
-wopr = Wopr::Woprd.new
-wopr.zmq_mainloop!
-
-loop { sleep 500 }
-puts "end-of-the-world"
