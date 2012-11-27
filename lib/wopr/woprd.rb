@@ -73,8 +73,8 @@ module Wopr
     end
 
     def handle_message(msg)
-      puts "#{@addr}: #{msg}"
-      @wsock.send_all(msg)
+      puts "<- #{@addr}: #{msg}"
+      @wsock.send_all!(msg)
     end
   end
 
@@ -143,6 +143,5 @@ end
 wopr = Wopr::Woprd.new
 wopr.zmq_mainloop!
 
-puts "Server ready."
 loop { sleep 500 }
 puts "end-of-the-world"
