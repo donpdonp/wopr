@@ -2,7 +2,6 @@ require 'bundler/setup'
 require 'httparty'
 require 'wopr/exchange_actor'
 require 'json'
-require 'faraday'
 require 'rethinkdb'
 require 'celluloid/io'
 require 'websocket'
@@ -51,8 +50,12 @@ module Wopr
         include Celluloid::IO
 
         def websocket_connect
+          puts "socketio dance"
+          url = "https://socketio.mtgox.com/mtgox/1"
+          result = HTTParty.post url
+          puts result.body.inspect
+
           puts "connecting to websocket"
-          #https://socketio.mtgox.com/mtgox
           s = TCPSocket.new('socketio.mtgox.com',80)
           begin
             handshake = WebSocket::Handshake::Client.new(:url => 'ws://socketio.mtgox.com/mtgox')

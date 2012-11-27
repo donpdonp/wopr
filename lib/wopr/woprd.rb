@@ -92,6 +92,7 @@ module Wopr
         end
         puts "handshake valid: #{handshake.valid?}"
         if handshake.valid?
+          puts "Responding to handshake"
           client.write handshake.to_s
         end
 
