@@ -11,20 +11,22 @@ Dir.mkdir(log_dir) unless File.directory?(log_dir)
 pid_dir = File.join(BASE_DIR, "tmp/pids")
 FileUtils.mkdir_p(pid_dir) unless File.directory?(pid_dir)
 
-woprd_pid_filename = File.join(pid_dir, "woprd.pid")
-if File.exists?(woprd_pid_filename)
-  woprd_pid= File.read(woprd_pid_filename).to_i
+pids = {}
+Dir[pid_dir+"/*.pid"].each do |pid_filename|
+  process_name = File.basename(pid_filename,".pid")
+  pids[process_name] = File.read(pid_filename).to_i
 end
 
 # Daemon management
 if ARGV[0] == 'start'
-  if woprd_pid
+  if pids["woprd"]
     puts "woprd already running on PID #{woprd_pid}"
   else
     if (pid = fork).nil? # parallel universes start here
       puts "Daemon start #{Process.pid}"
       Process.setsid #unix magic
       File.open(File.join(pid_dir, "woprd.pid"), "w") {|f| f.write Process.pid}
+      $0='woprd'
       require 'wopr/woprd'
       Celluloid::ZMQ.init
       wopr = Wopr::Woprd.new
@@ -32,11 +34,11 @@ if ARGV[0] == 'start'
     end
   end
 elsif ARGV[0] == 'stop'
-  if woprd_pid
-    puts "Stopping #{woprd_pid}"
-    File.delete(woprd_pid_filename)
+  if pids["woprd"]
+    puts "Stopping #{pids["woprd"]}"
+    File.delete(File.join(pid_dir,"woprd.pid"))
     begin
-      Process.kill("HUP", woprd_pid)
+      Process.kill("HUP", pids["woprd"])
     rescue Errno::ESRCH
       puts "Removed stale PID"
     end
@@ -44,11 +46,10 @@ elsif ARGV[0] == 'stop'
     puts "wopr not running"
   end
 else
-  if woprd_pid
-    puts "Status: pid #{woprd_pid}"
+  if pids["woprd"]
+    puts "woprd running. pid #{pids["woprd"]}"
   else
     puts <<EOF
-Help:
 $ wopr [start|stop]
 EOF
   end
