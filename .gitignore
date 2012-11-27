@@ -6,6 +6,7 @@
 /tmp/
 /Gemfile.lock
 /log/
+/nodejs/node_modules
 
 
 /config/settings.json

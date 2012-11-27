@@ -1,0 +1,14 @@
+{
+    "name": "wopr",
+    "version": "0.1.0",
+    "engines": { "node": "~0.6.x" },
+    "main": "./exchange.js",
+    "directories": {"lib": "./lib/"},
+    "description": "mtgox websocket bridge",
+    "dependencies": {
+        "socket.io-client": "~0.9.x", 
+        "zmq": "2.2.x"
+    },
+    "repository": { "type":  "git",
+                    "url":   "http://github.com/donpdonp/wopr.git" }
+}
