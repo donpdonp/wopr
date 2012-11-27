@@ -5,8 +5,10 @@
     "main": "./exchange.js",
     "directories": {"lib": "./lib/"},
     "description": "mtgox websocket bridge",
+    "private": true,
     "dependencies": {
-        "socket.io-client": "~0.9.x", 
+        "socket.io-client": "~0.9.x",
+        "express": "3.x",
         "zmq": "2.2.x"
     },
     "repository": { "type":  "git",

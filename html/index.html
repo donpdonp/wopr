@@ -5,14 +5,12 @@
 
   <div id="output">
     <script>
-var exampleSocket = new WebSocket("wss://socketio.mtgox.com/mtgox/0.0.2");
-//var exampleSocket = new WebSocket("ws://websocket.mtgox.com/mtgox");
-//var exampleSocket = new WebSocket("ws://localhost:2000");
-exampleSocket.onopen = function (event) {
+var wopr_sock = new WebSocket("ws://localhost:2000");
+wopr_sock.onopen = function (event) {
   console.log('onopen!')
-  exampleSocket.send("Here's some text that the server is urgently awaiting!");
+  wopr_sock.send("");
 };
-exampleSocket.onmessage = function (event) {
+wopr_sock.onmessage = function (event) {
   console.log(event.data);
 }
     </script>
