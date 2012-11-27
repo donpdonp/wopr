@@ -11,7 +11,7 @@
 var wopr_sock = new WebSocket("ws://localhost:2000");
 wopr_sock.onopen = function (event) {
   console.log('onopen!')
-  wopr_sock.send("");
+  wopr_sock.send("boop");
 };
 wopr_sock.onmessage = function (event) {
   console.log(event.data);

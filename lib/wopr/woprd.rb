@@ -75,6 +75,7 @@ module Wopr
     include Celluloid::IO
 
     def websocket_mainloop
+      @clients = {}
       puts "Socket 2000 listening"
       server = TCPServer.new 'localhost', 2000
       loop do
@@ -83,7 +84,9 @@ module Wopr
     end
 
     def handle_connection(client)
-      puts "Socket 2000 client accepted"
+      client_addr = client.peeraddr(:numeric)
+      client_id = "#{client_addr[3]}-#{client_addr[1]}"
+      puts "Socket 2000 client #{client_id} #{@clients.size}"
       handshake = WebSocket::Handshake::Server.new
       begin
         until handshake.finished?
@@ -92,12 +95,15 @@ module Wopr
         end
         puts "handshake valid: #{handshake.valid?}"
         if handshake.valid?
+          @clients.update(client_id => {socket: client,
+                                        ws_version: handshake.version})
           puts "Responding to handshake"
           client.write handshake.to_s
+          loop { read_frame(client, handshake.version) }
         end
 
-        loop { read_frame(client, handshake.version) }
       rescue EOFError
+        @clients.delete(client_id)
         puts "client EOF"
       end
     end
@@ -109,10 +115,18 @@ module Wopr
         frame << data
         msg = frame.next
         if msg
-          puts "got MSG: #{msg}"
+          puts "got MSG #{msg.type}: #{msg}"
         end
-        out_frame = WebSocket::Frame::Outgoing::Server.new(:version => version, :data => "Hell0", :type => :text)
-        client.write out_frame.to_s
+      end
+    end
+
+    def send_all(json)
+      @clients.each do |client_id, client|
+        puts "Sending to #{client_id}"
+        out_frame = WebSocket::Frame::Outgoing::Server.new(:version => client[:ws_version],
+                                                           :data => "Hell0 #{client_id}",
+                                                           :type => :text)
+        client[:socket].write out_frame.to_s
       end
     end
   end
@@ -122,6 +136,11 @@ wopr = Wopr::Woprd.new
 wopr.zmq_mainloop!
 
 wsock = Wopr::WoprSocket.new
-wsock.websocket_mainloop
+wsock.websocket_mainloop!
+
+loop do
+  sleep 1
+  wsock.send_all("")
+end
 
 puts "end-of-the-world"
