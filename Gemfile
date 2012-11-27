@@ -1,6 +1,5 @@
 source :rubygems
 
-gem 'bluepill'
 gem 'websocket'
 gem 'celluloid-zmq'
 gem 'celluloid-io'
