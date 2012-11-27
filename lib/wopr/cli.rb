@@ -33,10 +33,10 @@ if ARGV[0] == 'start'
   end
 elsif ARGV[0] == 'stop'
   if woprd_pid
-    File.delete(woprd_pid_filename)
     puts "Stopping #{woprd_pid}"
+    File.delete(woprd_pid_filename)
     begin
-    Process.kill("HUP", woprd_pid)
+      Process.kill("HUP", woprd_pid)
     rescue Errno::ESRCH
       puts "Removed stale PID"
     end
