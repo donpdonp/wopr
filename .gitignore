@@ -4,7 +4,6 @@
 /bin/
 /gems/
 /tmp/
-/pid/
 /Gemfile.lock
 /log/
 /nodejs/node_modules

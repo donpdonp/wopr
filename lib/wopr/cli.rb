@@ -1,6 +1,5 @@
 require 'bundler/setup'
 require 'json'
-require 'wopr/woprd'
 
 BASE_DIR = File.expand_path(File.dirname(__FILE__))+"/../../"
 SETTINGS = JSON.load(File.open(File.join(BASE_DIR,"config/settings.json")))
@@ -9,16 +8,17 @@ RUBY = File.join(RbConfig::CONFIG['bindir'], RbConfig::CONFIG['ruby_install_name
 # Temp dir setups
 log_dir = File.join(BASE_DIR, "log")
 Dir.mkdir(log_dir) unless File.directory?(log_dir)
-pid_dir = File.join(BASE_DIR, "pid")
-Dir.mkdir(pid_dir) unless File.directory?(pid_dir)
+pid_dir = File.join(BASE_DIR, "tmp/pids")
+FileUtils.mkdir_p(pid_dir) unless File.directory?(pid_dir)
 
 # Daemon management
 if ARGV[0] == 'start'
 
-  if (pid = fork).nil? # alternate universes here
+  if (pid = fork).nil? # parallel universes start here
     puts "Daemon start #{Process.pid}"
     Process.setsid #unix magic
     File.open(File.join(pid_dir, "woprd.pid"), "w") {|f| f.write Process.pid}
+    require 'wopr/woprd'
     Celluloid::ZMQ.init
     wopr = Wopr::Woprd.new
     wopr.zmq_mainloop

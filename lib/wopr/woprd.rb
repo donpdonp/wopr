@@ -1,6 +1,5 @@
 require 'celluloid/zmq'
 require 'celluloid/io'
-require 'json'
 require 'rethinkdb'
 require 'socket'
 require 'websocket'
