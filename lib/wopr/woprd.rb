@@ -67,7 +67,10 @@ module Wopr
       msg = JSON.parse(json.force_encoding('UTF-8'))
       case msg["op"]
       when "private"
-        @wsock.send_all!(msg.to_json)
+        case msg["private"]
+        when "depth"
+          @wsock.send_all!(msg["depth"].to_json)
+        end
       end
     end
   end
