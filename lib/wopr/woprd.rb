@@ -42,8 +42,6 @@ module Wopr
 
     def db_setup
       begin
-        puts "Connecting to #{@rdb_config["host"]}:#{@rdb_config["db"]}"
-        self.class.r.connect(@rdb_config["host"], @rdb_config["port"])
         unless self.class.r.db_list.run.include?(@rdb_config["db"])
           self.class.r.db_create(@rdb_config["db"]).run
           puts "Warning: created database #{@rdb_config["db"]}"
