@@ -5,9 +5,36 @@ var io = require('socket.io-client')
 pub.bindSync('tcp://127.0.0.1:3096');
 console.log('zmq pub listening on port 3096');
 
-console.log('connecting to mtgox')
-conn = io.connect('https://socketio.mtgox.com/mtgox');
+var mps = 0 // messages per second
+var mps_count = 0
+var mps_mark = new Date()
+
+var url = 'https://socketio.mtgox.com/mtgox'
+
+console.log('Connecting to '+url)
+conn = io.connect(url);
+conn.on('connection', function(){
+  console.log('connected.')
+})
 conn.on('message', function(data) {
-  console.log(data)
-  pub.send('E'+JSON.stringify(data))
+  pub.send('E'+JSON.stringify(wopr_format(data)))
+  mps_count += 1
 });
+
+setInterval(performance_report, 10000)
+
+function wopr_format(msg) {
+  msg;
+}
+
+function performance_report() {
+  now = new Date()
+  period = ((now - mps_mark)/1000)
+  mps = mps_count / period
+  mps_mark = now
+
+  report = {mps: mps, period: period, count: mps_count}
+  report_json = JSON.stringify(report)
+  console.log(report_json)
+  pub.send('P'+report_json)
+}
