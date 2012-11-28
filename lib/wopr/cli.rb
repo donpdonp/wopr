@@ -1,5 +1,6 @@
 require 'bundler/setup'
 require 'json'
+require 'rethinkdb'
 
 BASE_DIR = File.expand_path(File.dirname(__FILE__))+"/../../"
 SETTINGS = JSON.load(File.open(File.join(BASE_DIR,"config/settings.json")))
@@ -14,7 +15,13 @@ FileUtils.mkdir_p(pid_dir) unless File.directory?(pid_dir)
 pids = {}
 Dir[pid_dir+"/*.pid"].each do |pid_filename|
   process_name = File.basename(pid_filename,".pid")
-  pids[process_name] = File.read(pid_filename).to_i
+  pid = File.read(pid_filename).to_i
+  if File.exists?("/proc/#{pid}")
+    pids[process_name] = pid
+  else
+    puts "Clearing stale PID file #{pid_filename}"
+    File.delete(pid_filename)
+  end
 end
 
 # Daemon management
@@ -22,6 +29,8 @@ if ARGV[0] == 'start'
   if pids["woprd"]
     puts "woprd already running on PID #{woprd_pid}"
   else
+    # db connect
+    RethinkDB::RQL.connect(SETTINGS["wopr"]["rethinkdb"]["host"])
     if (pid = fork).nil? # parallel universes start here
       puts "Daemon start #{Process.pid}"
       Process.setsid #unix magic
