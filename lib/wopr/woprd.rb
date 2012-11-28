@@ -61,7 +61,9 @@ module Wopr
     end
 
     def handle_message(json)
-      puts "<- #{@addr}: #{json}"
+      code = json.slice!(0)
+      puts "<- #{@addr}: #{code} #{json}"
+
       msg = JSON.parse(json)
       case msg["op"]
       when "private"
