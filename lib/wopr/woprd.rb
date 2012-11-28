@@ -11,6 +11,9 @@ module Wopr
     extend RethinkDB::Shortcuts
 
     def initialize
+      @bids = []
+      @asks = []
+
       @rdb_config = SETTINGS["wopr"]["rethinkdb"]
       db_setup
       zmq_setup
@@ -29,7 +32,8 @@ module Wopr
       @zpub.bind(@addr)
 
       @zsub = SubSocket.new
-      @zsub.subscribe('E')
+      @zsub.subscribe('E') #exchange messages
+      @zsub.subscribe('P') #performance messages
       db.table('exchanges').run.each do |exchange|
         puts "woprd sub #{exchange["name"]} on #{exchange["zmq_pub"]}"
         @zsub.connect(exchange["zmq_pub"])
@@ -69,9 +73,14 @@ module Wopr
       when "private"
         case msg["private"]
         when "depth"
-          @wsock.send_all!(msg["depth"].to_json)
+          depth(msg)
+          #@wsock.send_all!(msg["depth"].to_json)
         end
       end
+    end
+
+    def depth(msg)
+
     end
   end
 
