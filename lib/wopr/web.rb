@@ -24,7 +24,8 @@ module Wopr
         puts "handshake valid: #{handshake.valid?}"
         if handshake.valid?
           @clients.update(client_id => {socket: client,
-                                        ws_version: handshake.version})
+                                        ws_version: handshake.version,
+                                        id: client_id})
           puts "Responding to handshake"
           client.write handshake.to_s
           loop { read_frame(client_id) }
@@ -44,8 +45,20 @@ module Wopr
         frame << data
         msg = frame.next
         if msg
-          puts "#{client_id} MSG #{msg.type}#{msg.type == :text ? ": #{msg}" : "."}"
+          dispatch(client, msg)
         end
+      end
+    end
+
+    def dispatch(client, msg)
+      puts "#{client[:id]} MSG #{msg.type}#{msg.type == :text ? ": #{msg}" : "."}"
+      case msg.type
+      when "ping"
+        out_frame = WebSocket::Frame::Outgoing::Server.new(:version => client[:ws_version],
+                                                           :data => "",
+                                                           :type => :pong)
+        client[:socket].write out_frame.to_s
+
       end
     end
 
