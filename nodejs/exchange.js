@@ -15,13 +15,12 @@ console.log('Connecting to '+url)
 conn = io.connect(url);
 conn.on('connection', function(){
   console.log('connected.')
+  setInterval(performance_report, 10000)
 })
 conn.on('message', function(data) {
   pub.send('E'+JSON.stringify(wopr_format(data)))
   mps_count += 1
 });
-
-setInterval(performance_report, 10000)
 
 function wopr_format(msg) {
   msg;
@@ -35,6 +34,8 @@ function performance_report() {
 
   report = {mps: mps, period: period, count: mps_count}
   report_json = JSON.stringify(report)
-  console.log(report_json)
+  if (mps > 0) {
+    console.log(report_json)
+  }
   pub.send('P'+report_json)
 }
