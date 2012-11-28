@@ -41,22 +41,18 @@ module Wopr
     end
 
     def db_setup
-      begin
-        unless self.class.r.db_list.run.include?(@rdb_config["db"])
-          self.class.r.db_create(@rdb_config["db"]).run
-          puts "Warning: created database #{@rdb_config["db"]}"
-        end
-
-        unless db.table_list.run.include?('exchanges')
-          db.table_create('exchanges').run
-          puts "Warning: created table 'exchanges'"
-        end
-
-        ecount = db.table('exchanges').count.run
-        puts "#{ecount} exchanges found"
-      rescue Errno::ENETUNREACH => e
-        puts "! Failed connecting to #{@rdb_config["host"]}:#{@rdb_config["db"]}"
+      unless self.class.r.db_list.run.include?(@rdb_config["db"])
+        self.class.r.db_create(@rdb_config["db"]).run
+        puts "Warning: created database #{@rdb_config["db"]}"
       end
+
+      unless db.table_list.run.include?('exchanges')
+        db.table_create('exchanges').run
+        puts "Warning: created table 'exchanges'"
+      end
+
+      ecount = db.table('exchanges').count.run
+      puts "#{ecount} exchanges found"
     end
 
     def zmq_mainloop
@@ -64,9 +60,13 @@ module Wopr
       loop { handle_message!(@zsub.read) }
     end
 
-    def handle_message(msg)
-      puts "<- #{@addr}: #{msg}"
-      @wsock.send_all!(msg)
+    def handle_message(json)
+      puts "<- #{@addr}: #{json}"
+      msg = JSON.parse(json)
+      case msg["op"]
+      when "private"
+        @wsock.send_all!(msg)
+      end
     end
   end
 
