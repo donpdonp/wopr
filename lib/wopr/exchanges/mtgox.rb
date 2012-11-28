@@ -2,7 +2,6 @@ require 'bundler/setup'
 require 'httparty'
 require 'wopr/exchange_actor'
 require 'json'
-require 'rethinkdb'
 require 'celluloid/io'
 require 'websocket'
 

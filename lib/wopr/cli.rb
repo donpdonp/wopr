@@ -30,16 +30,20 @@ if ARGV[0] == 'start'
     puts "woprd already running on PID #{woprd_pid}"
   else
     # db connect
-    RethinkDB::RQL.connect(SETTINGS["wopr"]["rethinkdb"]["host"])
-    if (pid = fork).nil? # parallel universes start here
-      puts "Daemon start #{Process.pid}"
-      Process.setsid #unix magic
-      File.open(File.join(pid_dir, "woprd.pid"), "w") {|f| f.write Process.pid}
-      $0='woprd'
-      require 'wopr/woprd'
-      Celluloid::ZMQ.init
-      wopr = Wopr::Woprd.new
-      wopr.zmq_mainloop
+    begin
+      RethinkDB::RQL.connect(SETTINGS["wopr"]["rethinkdb"]["host"])
+      if (pid = fork).nil? # parallel universes start here
+        puts "Daemon start #{Process.pid}"
+        Process.setsid #unix magic
+        File.open(File.join(pid_dir, "woprd.pid"), "w") {|f| f.write Process.pid}
+        $0='woprd'
+        require 'wopr/woprd'
+        Celluloid::ZMQ.init
+        wopr = Wopr::Woprd.new
+        wopr.zmq_mainloop
+      end
+    rescue SocketError => e
+      puts "Problem connecting to rethinkdb at #{SETTINGS["wopr"]["rethinkdb"]["host"]}: #{e}"
     end
   end
 elsif ARGV[0] == 'stop'
