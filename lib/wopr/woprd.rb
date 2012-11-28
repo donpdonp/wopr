@@ -64,7 +64,7 @@ module Wopr
       code = json.slice!(0)
       puts "<- #{@addr}: #{code} #{json}"
 
-      msg = JSON.parse(json)
+      msg = JSON.parse(json.force_encoding('UTF-8'))
       case msg["op"]
       when "private"
         @wsock.send_all!(msg.to_json)
