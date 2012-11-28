@@ -69,18 +69,20 @@ module Wopr
       puts "<- #{@addr}: #{code} #{json}"
 
       msg = JSON.parse(json.force_encoding('UTF-8'))
-      case msg["op"]
-      when "private"
-        case msg["private"]
-        when "depth"
-          depth(msg)
-          #@wsock.send_all!(msg["depth"].to_json)
-        end
+      case code
+      when "E"
+        depth(msg)
+        #@wsock.send_all!(msg["depth"].to_json)
+      when "P"
+        @wsock.send_all!(msg.to_json)
       end
     end
 
     def depth(msg)
+      if msg["bidask"] == 'ask'
+      elsif msg["bidask"] == 'bid'
 
+      end
     end
   end
 
