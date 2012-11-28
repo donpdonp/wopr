@@ -65,7 +65,7 @@ module Wopr
       msg = JSON.parse(json)
       case msg["op"]
       when "private"
-        @wsock.send_all!(msg)
+        @wsock.send_all!(msg.to_json)
       end
     end
   end
