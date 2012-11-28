@@ -2,7 +2,7 @@ require 'bundler/setup'
 require 'json'
 require 'rethinkdb'
 
-BASE_DIR = File.expand_path(File.dirname(__FILE__))+"/../../"
+BASE_DIR = File.expand_path(File.dirname(__FILE__)+"/../../")
 SETTINGS = JSON.load(File.open(File.join(BASE_DIR,"config/settings.json")))
 RUBY = File.join(RbConfig::CONFIG['bindir'], RbConfig::CONFIG['ruby_install_name'])
 
