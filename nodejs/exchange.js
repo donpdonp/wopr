@@ -47,7 +47,10 @@ function performance_report() {
   now = new Date()
   period = ((now - mps_mark)/1000)
   mps = mps_count / period
-  report = {mps: mps, period: period, count: mps_count}
+  report = {exchange: 'mtgox',
+                 mps: mps,
+              period: period,
+               count: mps_count}
 
   mps_mark = now
   mps_count = 0

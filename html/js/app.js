@@ -6,7 +6,12 @@ function setup(wopr_sock) {
   };
   wopr_sock.onmessage = function (event) {
     console.log(event.data);
-    $('#output').append('<div>'+event.data+'</div>')
+    msg = JSON.parse(event.data)
+    if(msg.mps) {
+      $('#perf').html(event.data)
+    } else {
+      $('#output').append('<div>'+event.data+'</div>')
+    }
   }
   wopr_sock.onclose = function (event) {
     $('#title').css('background', '#f00')
