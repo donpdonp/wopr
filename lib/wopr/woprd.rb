@@ -4,6 +4,7 @@ require 'rethinkdb'
 require 'socket'
 require 'websocket'
 require 'wopr/web'
+require 'wopr/market'
 
 module Wopr
   class Woprd
@@ -11,8 +12,8 @@ module Wopr
     extend RethinkDB::Shortcuts
 
     def initialize
-      @bids = []
-      @asks = []
+      @bids = Market.new("bid")
+      @asks = Market.new("ask")
 
       @rdb_config = SETTINGS["wopr"]["rethinkdb"]
       db_setup
@@ -80,8 +81,13 @@ module Wopr
 
     def depth(msg)
       if msg["bidask"] == 'ask'
+        market = @asks
       elsif msg["bidask"] == 'bid'
-
+        market = @bids
+      end
+      rank = market.sorted_insert(msg)
+      if rank == 0
+        @wsock.send_all!(msg.to_json)
       end
     end
   end
