@@ -12,18 +12,18 @@ class MarketTest  < Test::Unit::TestCase
 
     # first element
     offer = {"price"=>10}
-    @bid_market.sorted_insert(offer)
-    assert_equal @bid_market.offers.first["price"], offer["price"]
+    position = @bid_market.sorted_insert(offer)
+    assert_equal position, 0
 
     # before
     offer = {"price"=>11}
-    @bid_market.sorted_insert(offer)
-    assert_equal @bid_market.offers.first["price"], offer["price"]
+    position = @bid_market.sorted_insert(offer)
+    assert_equal position, 0
 
     # after
     offer = {"price"=>9}
-    @bid_market.sorted_insert(offer)
-    assert_equal @bid_market.offers.last["price"], offer["price"]
+    position = @bid_market.sorted_insert(offer)
+    assert_equal position, 2
   end
 end
 
