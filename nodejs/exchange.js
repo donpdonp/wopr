@@ -37,8 +37,8 @@ function wopr_format(depth_msg) {
     exchange: 'mtgox',
     market: depth_msg['currency']+depth_msg['item'],
     bidask: depth_msg['type_str'],
-    price: depth_msg['price_int'],
-    quantity: depth_msg['total_volume_int']
+    price: parseInt(depth_msg['price_int']) / 100000,
+    quantity: parseInt(depth_msg['total_volume_int']) / 100000000
   }
   return wopr_msg;
 }

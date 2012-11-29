@@ -10,6 +10,10 @@ class Market
     offer_rank
   end
 
+  def best
+    @offers.first
+  end
+
   def earliest_index(price)
     highest = nil
     size = @offers.size
