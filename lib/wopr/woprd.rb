@@ -86,6 +86,7 @@ module Wopr
         market = @bids
       end
       rank = market.sorted_insert(msg)
+      puts "depth rank #{rank}"
       if rank == 0
         @wsock.send_all!(msg.to_json)
       end

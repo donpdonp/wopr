@@ -64,7 +64,7 @@ module Wopr
 
     def send_all(json)
       @clients.each do |client_id, client|
-        puts "Sending to #{client_id}"
+        puts "-> #{client_id} #{json}"
         out_frame = WebSocket::Frame::Outgoing::Server.new(:version => client[:ws_version],
                                                            :data => json,
                                                            :type => :text)

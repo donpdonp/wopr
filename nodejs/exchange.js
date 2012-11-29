@@ -50,7 +50,8 @@ function performance_report() {
   report = {exchange: 'mtgox',
                  mps: mps,
               period: period,
-               count: mps_count}
+               count: mps_count,
+                time: new Date()}
 
   mps_mark = now
   mps_count = 0
