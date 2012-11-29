@@ -1,4 +1,6 @@
 class Market
+  attr_reader :offers
+
   def initialize(bidask)
     @offers = []
     @bidask = bidask
@@ -8,10 +10,6 @@ class Market
     offer_rank = earliest_index(new_offer["price"])
     @offers.insert(offer_rank, new_offer)
     offer_rank
-  end
-
-  def best
-    @offers.first
   end
 
   def earliest_index(price)
