@@ -28,7 +28,7 @@ module Wopr
         def offers(data, bidask, now)
           msgs = data[bidask].map do |offer|
             { exchange: 'btce',
-              bidask: 'ask',
+              bidask: bidask[0,3],
               listed_at: now,
               price: offer.first,
               quantity: offer.last,
