@@ -53,12 +53,16 @@ module Wopr
     def dispatch(client, msg)
       puts "#{client[:id]} MSG #{msg.type}#{msg.type == :text ? ": #{msg}" : "."}"
       case msg.type
-      when "ping"
+      when :ping
         out_frame = WebSocket::Frame::Outgoing::Server.new(:version => client[:ws_version],
                                                            :data => "",
                                                            :type => :pong)
         client[:socket].write out_frame.to_s
 
+      when :text
+        if msg.to_s == "RELOAD"
+          puts "Push reload"
+        end
       end
     end
 
