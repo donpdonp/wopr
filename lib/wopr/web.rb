@@ -14,7 +14,7 @@ module Wopr
     def handle_connection(client)
       client_addr = client.peeraddr(:numeric)
       client_id = "#{client_addr[3]}:#{client_addr[1]}"
-      puts "Socket 2000 client #{client_id} #{@clients.size}"
+      puts "ws client #{client_id}"
       handshake = WebSocket::Handshake::Server.new
       begin
         until handshake.finished?
@@ -26,7 +26,6 @@ module Wopr
           @clients.update(client_id => {socket: client,
                                         ws_version: handshake.version,
                                         id: client_id})
-          puts "Responding to handshake"
           client.write handshake.to_s
           loop { read_frame(client_id) }
         end
@@ -54,6 +53,7 @@ module Wopr
       puts "#{client[:id]} MSG #{msg.type}#{msg.type == :text ? ": #{msg}" : "."}"
       case msg.type
       when :ping
+        puts "ws ping"
         out_frame = WebSocket::Frame::Outgoing::Server.new(:version => client[:ws_version],
                                                            :data => "",
                                                            :type => :pong)
@@ -61,7 +61,6 @@ module Wopr
 
       when :text
         if msg.to_s == "RELOAD"
-          puts "Push reload"
         end
       end
     end
