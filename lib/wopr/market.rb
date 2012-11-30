@@ -9,13 +9,13 @@ class Market
   def sorted_insert(new_offer)
     offer_rank = earliest_index(new_offer["price"])
     if offer_rank < @offers.size
-      matching_offer = @offers[offer_rank]
-      if new_offer["price"] == matching_offer["price"]
+      existing_offer = @offers[offer_rank]
+      if new_offer["price"] == existing_offer["price"]
         #adjust volume
         if new_offer["quantity"] == 0
           @offers.delete(offer_rank)
         else
-          matching_offer["quantity"] = new_offer["quantity"]
+          existing_offer["quantity"] = new_offer["quantity"]
         end
         return
       end
