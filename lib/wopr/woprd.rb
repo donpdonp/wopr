@@ -86,7 +86,12 @@ module Wopr
         market = @bids
       end
       rank = market.sorted_insert(msg)
-      puts "best: #{market.offers[0]} depth rank #{rank}"
+
+      best_ask = @asks.offers[0]
+      puts "best ask: #{best_ask["exchange"]} #{best_ask["price"]}"
+      good_bids_idx = @bids.earliest_index(best_ask["price"])
+      puts "good bids index #{good_bids_idx}"
+
       if rank == 0
         @wsock.send_all!(msg.to_json)
       end
