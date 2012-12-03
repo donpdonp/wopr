@@ -1,5 +1,6 @@
 require 'bundler/setup'
 require 'json'
+require 'trollop'
 require 'rethinkdb'
 
 BASE_DIR = File.expand_path(File.dirname(__FILE__)+"/../../")
@@ -23,6 +24,20 @@ Dir[pid_dir+"/*.pid"].each do |pid_filename|
     File.delete(pid_filename)
   end
 end
+opts = Trollop::options do
+    opt :daemon, "Run woprd as a daemon"
+end
+puts opts
+
+def start_woprd
+  puts "Connecting to rethinkdb at #{SETTINGS["wopr"]["rethinkdb"]["host"]}:#{SETTINGS["wopr"]["rethinkdb"]["port"]}"
+  RethinkDB::RQL.connect(SETTINGS["wopr"]["rethinkdb"]["host"],
+                         SETTINGS["wopr"]["rethinkdb"]["port"])
+  require 'wopr/woprd'
+  Celluloid::ZMQ.init
+  wopr = Wopr::Woprd.new
+  wopr.zmq_mainloop
+end
 
 # Daemon management
 if ARGV[0] == 'start'
@@ -31,18 +46,14 @@ if ARGV[0] == 'start'
   else
     # db connect
     begin
-      if (pid = fork).nil? # parallel universes start here
-        puts "worpd daemon starting (PID #{Process.pid})"
-        Process.setsid #unix magic
-        File.open(File.join(pid_dir, "woprd.pid"), "w") {|f| f.write Process.pid}
-        $0='woprd'
-        puts "Connecting to rethinkdb at #{SETTINGS["wopr"]["rethinkdb"]["host"]}:#{SETTINGS["wopr"]["rethinkdb"]["port"]}"
-        RethinkDB::RQL.connect(SETTINGS["wopr"]["rethinkdb"]["host"],
-                               SETTINGS["wopr"]["rethinkdb"]["port"])
-        require 'wopr/woprd'
-        Celluloid::ZMQ.init
-        wopr = Wopr::Woprd.new
-        wopr.zmq_mainloop
+      if opts[:daemon] && (pid = fork).nil? # parallel universes start here
+          puts "worpd daemon starting (PID #{Process.pid})"
+          Process.setsid #unix magic
+          File.open(File.join(pid_dir, "woprd.pid"), "w") {|f| f.write Process.pid}
+          $0='woprd'
+          start_woprd
+      else
+        start_woprd unless pid
       end
     rescue SocketError => e
       puts "Problem connecting to #{SETTINGS["wopr"]["rethinkdb"]["host"]}: #{e}"

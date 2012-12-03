@@ -1,5 +1,6 @@
 source :rubygems
 
+gem 'trollop'
 gem 'websocket'
 gem 'celluloid-zmq'
 gem 'celluloid-io'
