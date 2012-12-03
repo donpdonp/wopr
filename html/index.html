@@ -1,5 +1,8 @@
+<!doctype html>
+<html>
 <head>
   <script src="js/jquery-1.8.3.min.js"></script>
+  <script src="js/handlebars-1.0.rc.1.js"></script>
   <script src="js/app.js"></script>
   <style>
   #title { text-align: center;}
@@ -21,13 +24,13 @@
   <div id="output">
     <div class="market">
       <h3> bids </h3>
-      <div id="bids">
-      </div>
+      <ul class="offers" id="bids">
+      </ul>
     </div>
     <div class="market">
       <h3> asks </h3>
-      <div id="asks">
-      </div>
+      <ul class="offers" id="asks">
+      </ul>
     </div>
   </div>
 
@@ -35,4 +38,12 @@
   var wopr_sock = new WebSocket("ws://localhost:2000");
   setup(wopr_sock)
 </script>
+
+<script id="bid-offer" type="text/x-handlebars-template">
+  <li>
+    <span class="quantity">{{quantity}}</span>@
+    <span class="price">{{price}}</span>
+  </li>
+</script>
 </body>
+<html>

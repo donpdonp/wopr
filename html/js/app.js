@@ -8,6 +8,7 @@ function setup(wopr_sock) {
     msg = JSON.parse(event.data)
     switch(msg.type) {
       case "load":
+        load_offers(msg.response)
         break;
       case "offer":
         show_offer(msg)
@@ -37,4 +38,21 @@ function show_offer(msg) {
     bucket = $('#bids')
   }
   bucket.prepend("<div>"+display+"</div>")
+}
+
+function load_offers(msg) {
+  var html = $('#bid-offer').html()
+  var template = Handlebars.compile(html)
+
+  var ask = offer_tmpl_data(msg["ask"])
+  $('#asks').html(template(ask))
+}
+
+function offer_tmpl_data(msg) {
+  var askbid = msg || {"price":"?","quantity":"?"}
+  offer = {
+    'price': askbid["price"],
+    'quantity': askbid["quantity"]
+  }
+  return offer
 }
