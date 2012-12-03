@@ -22,7 +22,7 @@ module Wopr
     end
 
     def websocket_setup
-      @wsock = Wopr::Web.new
+      @wsock = Wopr::Web.new(self)
       @wsock.websocket_mainloop!
     end
 
@@ -75,7 +75,7 @@ module Wopr
         depth(msg)
         #@wsock.send_all!(msg["depth"].to_json)
       when "P"
-        @wsock.send_all!(msg.to_json)
+        @wsock.send_all!('offer', msg.to_json)
       end
     end
 
@@ -86,16 +86,17 @@ module Wopr
         market = @bids
       end
       rank = market.sorted_insert(msg)
-
-      best_ask = @asks.offers[0]
-      puts "best ask: #{best_ask["exchange"]} #{best_ask["price"]}"
-      good_bids_idx = @bids.earliest_index(best_ask["price"])
-      puts "good bids index #{good_bids_idx}"
-
-      if rank == 0
-        @wsock.send_all!(msg.to_json)
-      end
     end
+
+    def profitable_bids
+      best_ask = @asks.offers[0]
+      if best_ask
+        range = 0..@bids.earliest_index(best_ask["price"])
+        best_offers = @bids.offers[range]
+      end
+      {ask: best_ask, bids: best_offers}
+    end
+
   end
 
 end

@@ -2,6 +2,10 @@ module Wopr
   class Web
     include Celluloid::IO
 
+    def initialize(woprd)
+      @woprd = woprd
+    end
+
     def websocket_mainloop
       @clients = {}
       puts "Socket 2000 listening"
@@ -61,18 +65,31 @@ module Wopr
 
       when :text
         if msg.to_s == "RELOAD"
+          baseframe(client)
         end
       end
     end
 
-    def send_all(json)
+    def send_all(type, json)
       @clients.each do |client_id, client|
-        puts "-> #{client_id} #{json}"
-        out_frame = WebSocket::Frame::Outgoing::Server.new(:version => client[:ws_version],
-                                                           :data => json,
-                                                           :type => :text)
-        client[:socket].write out_frame.to_s
+        push(client, type, json)
       end
+    end
+
+    def push(client, type, obj)
+      json_rpc = {"response" => obj,
+                  "type" => type,
+                  "id" => 0}
+      json_msg = json_rpc.to_json
+      puts "-> #{client[:id]} #{json_msg}"
+      out_frame = WebSocket::Frame::Outgoing::Server.new(:version => client[:ws_version],
+                                                         :data => json_msg,
+                                                         :type => :text)
+      client[:socket].write out_frame.to_s
+    end
+
+    def baseframe(client)
+      push(client, 'load', @woprd.profitable_bids)
     end
   end
 end
