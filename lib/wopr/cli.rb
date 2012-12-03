@@ -27,16 +27,20 @@ end
 opts = Trollop::options do
     opt :daemon, "Run woprd as a daemon"
 end
-puts opts
 
 def start_woprd
-  puts "Connecting to rethinkdb at #{SETTINGS["wopr"]["rethinkdb"]["host"]}:#{SETTINGS["wopr"]["rethinkdb"]["port"]}"
-  RethinkDB::RQL.connect(SETTINGS["wopr"]["rethinkdb"]["host"],
-                         SETTINGS["wopr"]["rethinkdb"]["port"])
-  require 'wopr/woprd'
-  Celluloid::ZMQ.init
-  wopr = Wopr::Woprd.new
-  wopr.zmq_mainloop
+  # db connect
+  begin
+    puts "Connecting to rethinkdb at #{SETTINGS["wopr"]["rethinkdb"]["host"]}:#{SETTINGS["wopr"]["rethinkdb"]["port"]}"
+    RethinkDB::RQL.connect(SETTINGS["wopr"]["rethinkdb"]["host"],
+                           SETTINGS["wopr"]["rethinkdb"]["port"])
+    require 'wopr/woprd'
+    Celluloid::ZMQ.init
+    wopr = Wopr::Woprd.new
+    wopr.zmq_mainloop
+  rescue SocketError => e
+    puts "Problem connecting to #{SETTINGS["wopr"]["rethinkdb"]["host"]}: #{e}"
+  end
 end
 
 # Daemon management
@@ -44,19 +48,14 @@ if ARGV[0] == 'start'
   if pids["woprd"]
     puts "woprd already running on PID #{pids["woprd"]}"
   else
-    # db connect
-    begin
-      if opts[:daemon] && (pid = fork).nil? # parallel universes start here
-          puts "worpd daemon starting (PID #{Process.pid})"
-          Process.setsid #unix magic
-          File.open(File.join(pid_dir, "woprd.pid"), "w") {|f| f.write Process.pid}
-          $0='woprd'
-          start_woprd
-      else
-        start_woprd unless pid
-      end
-    rescue SocketError => e
-      puts "Problem connecting to #{SETTINGS["wopr"]["rethinkdb"]["host"]}: #{e}"
+    if opts[:daemon] && (pid = fork).nil? # parallel universes start here
+        puts "worpd daemon starting (PID #{Process.pid})"
+        Process.setsid #unix magic
+        File.open(File.join(pid_dir, "woprd.pid"), "w") {|f| f.write Process.pid}
+        $0='woprd'
+        start_woprd
+    else
+      start_woprd unless pid
     end
   end
 elsif ARGV[0] == 'stop'
