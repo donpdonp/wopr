@@ -2,13 +2,9 @@ require 'reel'
 
 module Wopr
   class Web
+    include Celluloid::IO
 
-    def initialize(woprd)
-      @woprd = woprd
-    end
-
-    def websocket_mainloop
-      @clients = {}
+    def self.server(woprd)
       puts "Socket 3000 listening"
       Reel::Server.supervise("0.0.0.0", 3000) do |connection|
         while request = connection.request
@@ -19,7 +15,8 @@ module Wopr
             connection.respond :ok, File.read(File.join("html/",path))
           when Reel::WebSocket
             puts "Client made a WebSocket request to: #{request.url}"
-            handle_connection(request)
+            client = Web.new(woprd)
+            client.handle_connection(request)
             connection.close
             break
           end
@@ -27,45 +24,27 @@ module Wopr
       end
     end
 
+    def initialize(woprd)
+      @woprd = woprd
+    end
+
     def handle_connection(request)
-      #equest.socket.peeraddr(:numeric)
-      client_id =  "#{request.remote_ip}"
       puts request.inspect
-      @clients.update(:client_id => {request: request})
       begin
-        loop { read_frame(request) }
+        loop { puts request.read.inspect }
       rescue EOFError
         @clients.delete(client_id)
         puts "client EOF"
       end
     end
 
-    def read_frame(client_id)
-      client = @clients[client_id]
-      frame = WebSocket::Frame::Incoming::Server.new(:version => client[:ws_version])
-      loop do
-        data = client[:socket].readpartial(4096)
-        frame << data
-        msg = frame.next
-        if msg
-          dispatch(client, msg)
-        end
-      end
-    end
-
-    def dispatch(client, msg)
-      puts "#{client[:id]} MSG #{msg.type}#{msg.type == :text ? ": #{msg}" : "."}"
-      case msg.type
-      when :ping
-        puts "ws ping"
-        out_frame = WebSocket::Frame::Outgoing::Server.new(:version => client[:ws_version],
-                                                           :data => "",
-                                                           :type => :pong)
-        client[:socket].write out_frame.to_s
-
+    def dispatch(request, msg)
+      puts "MSG #{msg}"
+      msg = JSON.parse(msg)
+      case msg["type"]
       when :text
         if msg.to_s == "RELOAD"
-          baseframe(client)
+          baseframe(request)
         end
       end
     end
@@ -76,20 +55,17 @@ module Wopr
       end
     end
 
-    def push(client, type, obj)
+    def push(request, type, obj)
       json_rpc = {"response" => obj,
                   "type" => type,
                   "id" => 0}
       json_msg = json_rpc.to_json
       puts "-> #{client[:id]} #{type}"
-      out_frame = WebSocket::Frame::Outgoing::Server.new(:version => client[:ws_version],
-                                                         :data => json_msg,
-                                                         :type => :text)
-      client[:socket].write out_frame.to_s
+      request.write json_msg
     end
 
-    def baseframe(client)
-      push(client, 'load', @woprd.profitable_bids)
+    def baseframe(request)
+      push(request, 'load', @woprd.profitable_bids)
     end
   end
 end

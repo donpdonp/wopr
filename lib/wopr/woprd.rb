@@ -18,12 +18,7 @@ module Wopr
       @rdb_config = SETTINGS["wopr"]["rethinkdb"]
       db_setup
       zmq_setup
-      websocket_setup
-    end
-
-    def websocket_setup
-      @wsock = Wopr::Web.new(self)
-      @wsock.websocket_mainloop
+      Wopr::Web.server(self)
     end
 
     def zmq_setup
