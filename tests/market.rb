@@ -52,6 +52,10 @@ class MarketTest  < Test::Unit::TestCase
     assert_equal offer["price"], result["price"]
     assert_equal offer["quantity"], result["quantity"]
 
+    # 0 volume is cancel
+    offer = {"price"=>9, "quantity"=>0}
+    @bid_market.sorted_insert(offer)
+    assert_equal 1, @bid_market.offers.size
   end
 end
 

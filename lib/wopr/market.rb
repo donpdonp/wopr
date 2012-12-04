@@ -13,7 +13,7 @@ class Market
       if new_offer["price"] == existing_offer["price"]
         #adjust volume
         if new_offer["quantity"] == 0
-          @offers.delete(offer_rank)
+          @offers.delete_at(offer_rank)
         else
           existing_offer["quantity"] = new_offer["quantity"]
         end
