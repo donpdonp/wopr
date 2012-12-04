@@ -32,10 +32,10 @@ class Market
         else
           existing_offer["quantity"] = new_offer["quantity"]
         end
-        return
+        return offer_rank
       end
     end
-    return if new_offer["quantity"] == 0 # wayward cancel
+    return offer_rank if new_offer["quantity"] == 0 # wayward cancel
     @offers.insert(offer_rank, new_offer)
     offer_rank
   end
