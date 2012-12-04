@@ -23,7 +23,7 @@ module Wopr
 
     def websocket_setup
       @wsock = Wopr::Web.new(self)
-      @wsock.websocket_mainloop!
+      @wsock.websocket_mainloop
     end
 
     def zmq_setup

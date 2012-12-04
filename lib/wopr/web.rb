@@ -1,6 +1,7 @@
+require 'reel'
+
 module Wopr
   class Web
-    include Celluloid::IO
 
     def initialize(woprd)
       @woprd = woprd
@@ -8,32 +9,31 @@ module Wopr
 
     def websocket_mainloop
       @clients = {}
-      puts "Socket 2000 listening"
-      server = TCPServer.new 'localhost', 2000
-      loop do
-        handle_connection! server.accept
+      puts "Socket 3000 listening"
+      Reel::Server.supervise("0.0.0.0", 3000) do |connection|
+        while request = connection.request
+          case request
+          when Reel::Request
+            puts "Client requested: #{request.method} #{request.url}"
+            path = request.path + (request.path[-1] == "/" ? "index.html" : "")
+            connection.respond :ok, File.read(File.join("html/",path))
+          when Reel::WebSocket
+            puts "Client made a WebSocket request to: #{request.url}"
+            handle_connection(request)
+            connection.close
+            break
+          end
+        end
       end
     end
 
-    def handle_connection(client)
-      client_addr = client.peeraddr(:numeric)
-      client_id = "#{client_addr[3]}:#{client_addr[1]}"
-      puts "ws client #{client_id}"
-      handshake = WebSocket::Handshake::Server.new
+    def handle_connection(request)
+      #equest.socket.peeraddr(:numeric)
+      client_id =  "#{request.remote_ip}"
+      puts request.inspect
+      @clients.update(:client_id => {request: request})
       begin
-        until handshake.finished?
-          msg = client.readpartial(4096)
-          handshake << msg
-        end
-        puts "handshake valid: #{handshake.valid?}"
-        if handshake.valid?
-          @clients.update(client_id => {socket: client,
-                                        ws_version: handshake.version,
-                                        id: client_id})
-          client.write handshake.to_s
-          loop { read_frame(client_id) }
-        end
-
+        loop { read_frame(request) }
       rescue EOFError
         @clients.delete(client_id)
         puts "client EOF"
