@@ -71,10 +71,10 @@ module Wopr
 
       msg = JSON.parse(json.force_encoding('UTF-8'))
       case code
-      when "E"
+      when "E" #Exchange
         depth(msg)
         #@wsock.send_all!(msg["depth"].to_json)
-      when "P"
+      when "P" #Performance
         @wsock.send_all!('offer', msg.to_json)
       end
     end

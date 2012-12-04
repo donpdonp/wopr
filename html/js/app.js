@@ -4,7 +4,7 @@ function setup(wopr_sock) {
     wopr_sock.send("RELOAD");
   };
   wopr_sock.onmessage = function (event) {
-    console.log(event.data);
+    console.log(event.data.type);
     msg = JSON.parse(event.data)
     switch(msg.type) {
       case "load":
@@ -45,14 +45,20 @@ function load_offers(msg) {
   var template = Handlebars.compile(html)
 
   var ask = offer_tmpl_data(msg["ask"])
-  $('#asks').html(template(ask))
+  $('#asks').prepend(template(ask))
+
+  msg["bids"].forEach(function(msg) {
+    var bid = offer_tmpl_data(msg)
+    $('#bids').prepend(template(bid))
+  })
 }
 
 function offer_tmpl_data(msg) {
   var askbid = msg || {"price":"?","quantity":"?"}
   offer = {
     'price': askbid["price"],
-    'quantity': askbid["quantity"]
+    'quantity': askbid["quantity"],
+    'exchange': askbid["exchange"]
   }
   return offer
 }

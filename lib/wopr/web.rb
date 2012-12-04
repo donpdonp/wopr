@@ -81,7 +81,7 @@ module Wopr
                   "type" => type,
                   "id" => 0}
       json_msg = json_rpc.to_json
-      puts "-> #{client[:id]} #{json_msg}"
+      puts "-> #{client[:id]} #{type}"
       out_frame = WebSocket::Frame::Outgoing::Server.new(:version => client[:ws_version],
                                                          :data => json_msg,
                                                          :type => :text)
