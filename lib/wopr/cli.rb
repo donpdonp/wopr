@@ -34,7 +34,7 @@ def start_woprd
     puts "Connecting to rethinkdb at #{SETTINGS["wopr"]["rethinkdb"]["host"]}:#{SETTINGS["wopr"]["rethinkdb"]["port"]}"
     RethinkDB::RQL.connect(SETTINGS["wopr"]["rethinkdb"]["host"],
                            SETTINGS["wopr"]["rethinkdb"]["port"])
-    require 'wopr/woprd'
+    require 'wopr'
     Celluloid::ZMQ.init
     wopr = Wopr::Woprd.new
     wopr.zmq_mainloop
