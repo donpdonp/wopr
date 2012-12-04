@@ -7,7 +7,7 @@ class Market
   end
 
   def better_than(price)
-    if offers.size > 0
+    if offers.size > 0 && price
       range = 0..earliest_index(price)
       offers[range]
     else

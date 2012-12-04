@@ -1,9 +1,11 @@
 require 'bundler/setup'
 require 'httparty'
+require 'faraday'
 require 'wopr/exchange_actor'
 require 'json'
 require 'celluloid/io'
 require 'websocket'
+require 'rethinkdb'
 
 module Wopr
   module Exchanges
@@ -25,23 +27,31 @@ module Wopr
         end
 
         def offers(data, bidask)
-          msgs = data[bidask].map do |offer|
-            { bidask: 'ask',
+          data[bidask].map do |offer|
+            { exchange: 'mtgox',
+              bidask: bidask[0,3],
               listed_at: Time.at(offer["stamp"].to_i/1000000),
               price: offer["price"],
               quantity: offer["amount"],
               currency: 'usd'
             }
           end
-          msgs.each {|msg| @zpub.write('E'+msg.to_json)}
         end
 
         def offer_pump
           net = Faraday.new(request:{timeout:10})
           puts "mtgox http"
+          now = Time.now
           data = depth_poll(net, 'btc', 'usd')
-          puts "mtgox pump #{data["asks"].size}"
-          offers(data, 'asks')
+          puts "http delay #{Time.now-now}s"
+          now = Time.now
+          puts "mtgox pump #{data["asks"].size} asks"
+          msgs = offers(data, 'asks')
+          msgs.each {|msg| @zpub.write('E'+msg.to_json)}
+          puts "mtgox pump #{data["bids"].size} bids"
+          msgs = offers(data, 'bids')
+          msgs.each {|msg| @zpub.write('E'+msg.to_json)}
+          puts "http delay #{Time.now-now}s"
         end
       end
 
@@ -74,7 +84,10 @@ module Wopr
 end
 
 e1 = Wopr::Exchanges::Mtgox::Rest.new
-#e1.async.offer_pump
-mtgox_ws = Wopr::Exchanges::Mtgox::Websocket.new
-mtgox_ws.async.websocket_connect
+loop do
+  e1.offer_pump
+  sleep 10
+end
+#mtgox_ws = Wopr::Exchanges::Mtgox::Websocket.new
+#mtgox_ws.async.websocket_connect
 e1.run

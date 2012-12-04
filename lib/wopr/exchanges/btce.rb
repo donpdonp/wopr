@@ -3,7 +3,6 @@ require 'faraday'
 require 'wopr/exchange_actor'
 require 'json'
 require 'celluloid/io'
-require 'websocket'
 require 'rethinkdb'
 
 module Wopr
