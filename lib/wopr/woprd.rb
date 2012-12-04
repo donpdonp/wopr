@@ -1,11 +1,3 @@
-require 'celluloid/zmq'
-require 'celluloid/io'
-require 'rethinkdb'
-require 'socket'
-require 'websocket'
-require 'wopr/web'
-require 'wopr/market'
-
 module Wopr
   class Woprd
     include Celluloid::ZMQ
