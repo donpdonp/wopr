@@ -89,7 +89,8 @@ module Wopr
     end
 
     def baseframe(client)
-      push(client, 'load', @woprd.profitable_bids)
+      offers = @woprd.profitable_bids
+      push(client, 'load', offers)
     end
   end
 end

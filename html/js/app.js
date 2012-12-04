@@ -4,16 +4,19 @@ function setup(wopr_sock) {
     wopr_sock.send("RELOAD");
   };
   wopr_sock.onmessage = function (event) {
-    console.log(event.data.type);
     msg = JSON.parse(event.data)
     switch(msg.type) {
       case "load":
+        console.log("[load "+msg.response.asks.length+" "+
+                    msg.response.bids.length+" ]")
         load_offers(msg.response)
         break;
       case "offer":
+        console.log("[offer ]")
         show_offer(msg)
         break;
       case "performance":
+        console.log("[performance ]")
         $('#perf').html(event.data)
         break;
     }
@@ -44,8 +47,10 @@ function load_offers(msg) {
   var html = $('#bid-offer').html()
   var template = Handlebars.compile(html)
 
-  var ask = offer_tmpl_data(msg["ask"])
-  $('#asks').prepend(template(ask))
+  msg["asks"].forEach(function(msg) {
+    var bid = offer_tmpl_data(msg)
+    $('#asks').prepend(template(bid))
+  })
 
   msg["bids"].forEach(function(msg) {
     var bid = offer_tmpl_data(msg)

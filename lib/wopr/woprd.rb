@@ -78,15 +78,28 @@ module Wopr
         market = @bids
       end
       rank = market.sorted_insert(msg)
+      puts "sorted insert: size #{market.offers.size} rank #{rank}"
+      if rank == 0
+        if msg["volume"] == 0
+          puts "best just got cancelled."
+          if market.offers.size == 0
+            best = nil
+            puts "last offer cancelled. empty market"
+          else
+            best = market.offers[0]
+            puts "new second best #{best["bidask"]} #{best["exchange"]} #{best["price"]}"
+          end
+        else
+          puts "new best #{msg["bidask"]} #{msg["exchange"]} #{msg["price"]}"
+        end
+      end
     end
 
     def profitable_bids
-      best_ask = @asks.offers[0]
-      if best_ask
-        range = 0..@bids.earliest_index(best_ask["price"])
-        best_offers = @bids.offers[range]
-      end
-      {ask: best_ask, bids: best_offers}
+      best_asks = @bids.better_than(@asks.best_price)
+      best_bids = @asks.better_than(@bids.best_price)
+      puts "best asks #{best_asks.size} best bids #{best_bids.size}"
+      {asks: best_asks, bids: best_bids}
     end
 
   end

@@ -6,6 +6,21 @@ class Market
     @bidask = bidask
   end
 
+  def better_than(price)
+    if offers.size > 0
+      range = 0..earliest_index(price)
+      offers[range]
+    else
+      []
+    end
+  end
+
+  def best_price
+    if offers.size > 0
+      offers[0]["price"]
+    end
+  end
+
   def sorted_insert(new_offer)
     offer_rank = earliest_index(new_offer["price"])
     if offer_rank < @offers.size
@@ -20,6 +35,7 @@ class Market
         return
       end
     end
+    return if new_offer["quantity"] == 0 # wayward cancel
     @offers.insert(offer_rank, new_offer)
     offer_rank
   end
