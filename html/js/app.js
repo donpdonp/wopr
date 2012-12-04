@@ -4,20 +4,20 @@ function setup(wopr_sock) {
     wopr_sock.send("RELOAD");
   };
   wopr_sock.onmessage = function (event) {
-    msg = JSON.parse(event.data)
-    switch(msg.type) {
+    rpc = JSON.parse(event.data)
+    switch(rpc.type) {
       case "load":
-        console.log("[load "+msg.response.asks.length+" "+
-                    msg.response.bids.length+" ]")
-        load_offers(msg.response)
+        console.log("[load "+rpc.response.asks.length+" "+
+                    rpc.response.bids.length+" ]")
+        load_offers(rpc.response)
         break;
       case "offer":
         console.log("[offer ]")
-        show_offer(msg)
+        show_offer(rpc.response)
         break;
       case "performance":
         console.log("[performance ]")
-        $('#perf').html(event.data)
+        show_performance(rpc.response)
         break;
     }
   }
@@ -28,6 +28,10 @@ function setup(wopr_sock) {
     console.log(error)
     $('#error').html(''+error.target.url+' failed')
   }
+}
+
+function show_performance(msg) {
+  $('#perf').html(msg)
 }
 
 function show_offer(msg) {

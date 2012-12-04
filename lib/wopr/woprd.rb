@@ -67,7 +67,7 @@ module Wopr
         depth(msg)
         #@wsock.send_all!(msg["depth"].to_json)
       when "P" #Performance
-        @wsock.send_all!('offer', msg.to_json)
+        @wsock.send_all!('performance', msg.to_json)
       end
     end
 
@@ -78,27 +78,28 @@ module Wopr
         market = @bids
       end
       rank = market.sorted_insert(msg)
-      puts "sorted insert: size #{market.offers.size} rank #{rank}"
+      puts "sorted insert #{msg["bidask"]}: size #{market.offers.size} rank #{rank}"
       if rank == 0
         if msg["volume"] == 0
-          puts "best just got cancelled."
+          puts "** best just got cancelled."
           if market.offers.size == 0
             best = nil
-            puts "last offer cancelled. empty market"
+            puts "** last offer cancelled. empty market"
           else
             best = market.offers[0]
-            puts "new second best #{best["bidask"]} #{best["exchange"]} #{best["price"]}"
+            puts "** new second best #{best["bidask"]} #{best["exchange"]} #{best["price"]}"
           end
         else
-          puts "new best #{msg["bidask"]} #{msg["exchange"]} #{msg["price"]}"
+          puts "** new best #{msg["bidask"]} #{msg["exchange"]} #{msg["price"]}"
         end
       end
     end
 
     def profitable_bids
       best_asks = @bids.better_than(@asks.best_price)
+      puts "best ask price #{@asks.best_price} qualifying asks count #{best_asks.size}"
       best_bids = @asks.better_than(@bids.best_price)
-      puts "best asks #{best_asks.size} best bids #{best_bids.size}"
+      puts "best bid price #{@bids.best_price} qualifying bids count #{best_bids.size}"
       {asks: best_asks, bids: best_bids}
     end
 
