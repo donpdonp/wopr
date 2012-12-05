@@ -51,15 +51,21 @@ function load_offers(msg) {
   var html = $('#bid-offer').html()
   var template = Handlebars.compile(html)
 
+  var ask_total = 0
   msg["asks"].forEach(function(msg) {
+    ask_total = ask_total + (msg["price"] * msg["quantity"])
     var bid = offer_tmpl_data(msg)
     $('#asks').prepend(template(bid))
   })
+  $('#total-asks').html("$"+ask_total.toFixed(2))
 
+  var bid_total = 0
   msg["bids"].forEach(function(msg) {
+    bid_total = bid_total + (msg["price"] * msg["quantity"])
     var bid = offer_tmpl_data(msg)
     $('#bids').prepend(template(bid))
   })
+  $('#total-bids').html("$"+bid_total.toFixed(2))
 }
 
 function offer_tmpl_data(msg) {
