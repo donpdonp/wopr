@@ -7,6 +7,7 @@ gem 'celluloid-io'
 gem 'httparty'
 gem 'rethinkdb'
 gem 'faraday'
+gem 'uuid'
 
 group :development do
   gem 'pry'

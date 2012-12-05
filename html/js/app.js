@@ -77,3 +77,4 @@ function offer_tmpl_data(msg) {
   }
   return offer
 }
+

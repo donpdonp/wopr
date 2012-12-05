@@ -4,6 +4,7 @@ require 'wopr/exchange_actor'
 require 'json'
 require 'celluloid/io'
 require 'rethinkdb'
+require 'uuid'
 
 module Wopr
   module Exchanges
@@ -26,7 +27,8 @@ module Wopr
 
         def offers(data, bidask, now)
           msgs = data[bidask].map do |offer|
-            { exchange: 'btce',
+            { id: UUID.generate,
+              exchange: 'btce',
               bidask: bidask[0,3],
               listed_at: now,
               price: offer.first,

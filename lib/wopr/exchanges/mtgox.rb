@@ -28,7 +28,8 @@ module Wopr
 
         def offers(data, bidask)
           data[bidask].map do |offer|
-            { exchange: 'mtgox',
+            { id: UUID.generate,
+              exchange: 'mtgox',
               bidask: bidask[0,3],
               listed_at: Time.at(offer["stamp"].to_i/1000000),
               price: offer["price"],
