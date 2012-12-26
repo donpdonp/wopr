@@ -78,7 +78,7 @@ module Wopr
         market = @bids
       end
       rank = market.sorted_insert(msg)
-      puts "sorted insert #{msg["bidask"]}: size #{market.offers.size} rank #{rank}"
+      puts "sorted insert #{msg["bidask"]}: price #{msg["price"]} rank #{rank}/#{market.offers.size}  "
       if rank == 0
         if msg["volume"] == 0
           puts "** best just got cancelled."

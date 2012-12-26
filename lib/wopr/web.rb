@@ -8,8 +8,9 @@ module Wopr
 
     def websocket_mainloop
       @clients = {}
-      puts "Socket 2000 listening"
-      server = TCPServer.new 'localhost', 2000
+      port = 2000
+      puts "Websockets listening on port #{port}"
+      server = TCPServer.new 'localhost', port
       loop do
         handle_connection! server.accept
       end
