@@ -97,10 +97,13 @@ module Wopr
 
     def profitable_bids
       best_asks = @bids.better_than(@asks.best_price)
+      total_asks = best_asks.reduce(0){|total, offer| total += offer["price"]*offer["quantity"]}
       puts "best ask price #{@asks.best_price} qualifying asks count #{best_asks.size}"
       best_bids = @asks.better_than(@bids.best_price)
+      total_bids = best_bids.reduce(0){|total, offer| total += offer["price"]*offer["quantity"]}
       puts "best bid price #{@bids.best_price} qualifying bids count #{best_bids.size}"
-      {asks: best_asks, bids: best_bids}
+      {asks: best_asks, total_asks:total_asks,
+       bids: best_bids, total_bids:total_bids}
     end
 
   end

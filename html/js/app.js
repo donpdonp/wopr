@@ -15,6 +15,10 @@ function setup(wopr_sock) {
         console.log("[offer ]")
         show_offer(rpc.response)
         break;
+      case "total":
+        console.log("[total ]")
+        show_total(rpc.response)
+        break;
       case "performance":
         console.log("[performance ]")
         show_performance(rpc.response)
@@ -34,16 +38,22 @@ function show_performance(msg) {
   $('#perf').html(msg)
 }
 
+function show_total(msg) {
+  var display = msg["total"]
+  var bucket
+  if(msg.bidask == "ask") {
+    bucket = $('#total-asks')
+  }
+  if(msg.bidask == "bid") {
+    bucket = $('#total-bids')
+  }
+  bucket.prepend("<div>"+display+"</div>")
+}
+
 function show_offer(msg) {
   var display = msg["exchange"] +" "+ (msg["price"]) +" "+
                 msg["quantity"]
-  var bucket
-  if(msg.bidask == "ask") {
-    bucket = $('#asks')
-  }
-  if(msg.bidask == "bid") {
-    bucket = $('#bids')
-  }
+  var bucket = market_element(msg.bidask)
   bucket.prepend("<div>"+display+"</div>")
 }
 
@@ -51,21 +61,17 @@ function load_offers(msg) {
   var html = $('#bid-offer').html()
   var template = Handlebars.compile(html)
 
-  var ask_total = 0
   msg["asks"].forEach(function(msg) {
-    ask_total = ask_total + (msg["price"] * msg["quantity"])
     var bid = offer_tmpl_data(msg)
     $('#asks').prepend(template(bid))
   })
-  $('#total-asks').html("$"+ask_total.toFixed(2))
+  $('#total-asks').html("$"+msg["total_asks"].toFixed(2))
 
-  var bid_total = 0
   msg["bids"].forEach(function(msg) {
-    bid_total = bid_total + (msg["price"] * msg["quantity"])
     var bid = offer_tmpl_data(msg)
     $('#bids').prepend(template(bid))
   })
-  $('#total-bids').html("$"+bid_total.toFixed(2))
+  $('#total-bids').html("$"+msg["total_bids"].toFixed(2))
 }
 
 function offer_tmpl_data(msg) {
@@ -78,3 +84,13 @@ function offer_tmpl_data(msg) {
   return offer
 }
 
+function market_element(market) {
+  var bucket
+  if(market == "ask") {
+    bucket = $('#asks')
+  }
+  if(market == "bid") {
+    bucket = $('#bids')
+  }
+  return bucket
+}
