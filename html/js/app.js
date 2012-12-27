@@ -77,8 +77,8 @@ function load_offers(msg) {
 function offer_tmpl_data(msg) {
   var askbid = msg || {"price":"?","quantity":"?"}
   offer = {
-    'price': askbid["price"],
-    'quantity': askbid["quantity"],
+    'price': askbid["price"].toFixed(4),
+    'quantity': askbid["quantity"].toFixed(3),
     'exchange': askbid["exchange"]
   }
   return offer
