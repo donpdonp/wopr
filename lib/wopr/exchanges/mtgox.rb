@@ -41,18 +41,18 @@ module Wopr
 
         def offer_pump
           net = Faraday.new(request:{timeout:10})
-          puts "mtgox http"
+          puts "** mtgox http begin"
           now = Time.now
           data = depth_poll(net, 'btc', 'usd')
-          puts "http delay #{Time.now-now}s"
+          puts "http transfer delay #{Time.now-now}s"
           now = Time.now
-          puts "mtgox pump #{data["asks"].size} asks"
+          puts "pumping mtgox #{data["asks"].size} asks"
           msgs = offers(data, 'asks')
           msgs.each {|msg| @zpub.write('E'+msg.to_json)}
-          puts "mtgox pump #{data["bids"].size} bids"
+          puts "pumping mtgox #{data["bids"].size} bids"
           msgs = offers(data, 'bids')
           msgs.each {|msg| @zpub.write('E'+msg.to_json)}
-          puts "http delay #{Time.now-now}s"
+          puts "pump transfer delay #{Time.now-now}s"
         end
       end
 
@@ -60,7 +60,6 @@ module Wopr
         include Celluloid::IO
 
         def websocket_connect
-          puts "socketio dance"
           url = "https://socketio.mtgox.com/mtgox/1"
           result = HTTParty.post url
           puts result.body.inspect
@@ -87,6 +86,7 @@ end
 e1 = Wopr::Exchanges::Mtgox::Rest.new
 loop do
   e1.offer_pump
+  puts "sleeping 10\n"
   sleep 10
 end
 #mtgox_ws = Wopr::Exchanges::Mtgox::Websocket.new
