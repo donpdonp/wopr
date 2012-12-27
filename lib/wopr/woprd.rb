@@ -92,8 +92,6 @@ module Wopr
           puts "** new best #{msg["bidask"]} #{msg["exchange"]} #{msg["price"]}"
         end
       end
-      msg = {bidask: msg["bidask"], size: market.size}
-      @wsock.send_all!('size', msg)
     end
 
     def profitable_bids
