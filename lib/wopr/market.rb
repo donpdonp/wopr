@@ -21,6 +21,10 @@ class Market
     end
   end
 
+  def size
+    @offers.reduce(0){|total, offer| total + offer["price"]*offer["quantity"]}
+  end
+
   def sorted_insert(new_offer)
     offer_rank = earliest_index(new_offer["price"])
     if offer_rank < @offers.size

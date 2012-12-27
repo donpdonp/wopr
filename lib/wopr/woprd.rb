@@ -67,7 +67,7 @@ module Wopr
         depth(msg)
         #@wsock.send_all!(msg["depth"].to_json)
       when "P" #Performance
-        @wsock.send_all!('performance', msg.to_json)
+        @wsock.send_all!('performance', msg)
       end
     end
 
@@ -83,7 +83,6 @@ module Wopr
         if msg["volume"] == 0
           puts "** best just got cancelled."
           if market.offers.size == 0
-            best = nil
             puts "** last offer cancelled. empty market"
           else
             best = market.offers[0]
@@ -93,6 +92,8 @@ module Wopr
           puts "** new best #{msg["bidask"]} #{msg["exchange"]} #{msg["price"]}"
         end
       end
+      msg = {bidask: msg["bidask"], size: market.size}
+      @wsock.send_all!('size', msg)
     end
 
     def profitable_bids

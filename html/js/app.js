@@ -15,9 +15,9 @@ function setup(wopr_sock) {
         console.log("[offer ]")
         show_offer(rpc.response)
         break;
-      case "total":
-        console.log("[total ]")
-        show_total(rpc.response)
+      case "size":
+        console.log("[size ]")
+        show_size(rpc.response)
         break;
       case "performance":
         console.log("[performance ]")
@@ -38,8 +38,8 @@ function show_performance(msg) {
   $('#perf').html(msg)
 }
 
-function show_total(msg) {
-  var display = msg["total"]
+function show_size(msg) {
+  var display = msg["size"]
   var bucket
   if(msg.bidask == "ask") {
     bucket = $('#total-asks')
@@ -47,7 +47,7 @@ function show_total(msg) {
   if(msg.bidask == "bid") {
     bucket = $('#total-bids')
   }
-  bucket.prepend("<div>"+display+"</div>")
+  bucket.html("<div>"+display+"</div>")
 }
 
 function show_offer(msg) {
