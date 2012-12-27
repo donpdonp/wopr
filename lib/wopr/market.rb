@@ -60,4 +60,8 @@ class Market
     end
     highest || 0
   end
+
+  def remove_exchange(exchange)
+    @offers.select{|o| o["exchange"] == exchange}.each{|o| @offers.delete(o)}
+  end
 end

@@ -26,6 +26,7 @@ module Wopr
 
       @zsub = SubSocket.new
       @zsub.subscribe('E') #exchange messages
+      @zsub.subscribe('W') #exchange wipe
       @zsub.subscribe('P') #performance messages
       db.table('exchanges').run.each do |exchange|
         puts "woprd sub #{exchange["name"]} on #{exchange["zmq_pub"]}"
@@ -66,6 +67,8 @@ module Wopr
       when "E" #Exchange
         depth(msg)
         #@wsock.send_all!(msg["depth"].to_json)
+      when "W" #Exchange wipe
+        wipe(msg["exchange"])
       when "P" #Performance
         @wsock.send_all!('performance', msg)
       end
@@ -105,6 +108,11 @@ module Wopr
        bids: best_bids, total_bids:total_bids}
     end
 
+    def wipe(exchange)
+      puts "Wiping exchange #{exchange}"
+      @bids.remove_exchange(exchange)
+      @asks.remove_exchange(exchange)
+    end
   end
 
 end

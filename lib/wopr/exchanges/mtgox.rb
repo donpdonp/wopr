@@ -16,20 +16,21 @@ module Wopr
         extend RethinkDB::Shortcuts
 
         def initialize
+          @exchange = "mtgox"
           db_setup(self.class.r)
           zmq_setup(PubSocket.new, SubSocket.new, "Mtgox")
         end
 
         def depth_poll(conn, from_currency, to_currency)
           # covers two markets, from/to and to/from
-          url = "https://mtgox.com/api/1/#{from_currency.upcase}#{to_currency.upcase}/depth"
-          JSON.parse(conn.get(url).body)["return"]
+          url = "https://mtgox.com/api/1/#{from_currency.upcase}#{to_currency.upcase}/fulldepth"
+          JSON.parse(conn.get(url).body)
         end
 
         def offers(data, bidask)
           data[bidask].map do |offer|
             { id: UUID.generate,
-              exchange: 'mtgox',
+              exchange: @exchange,
               bidask: bidask[0,3],
               listed_at: Time.at(offer["stamp"].to_i/1000000),
               price: offer["price"],
@@ -45,14 +46,20 @@ module Wopr
           now = Time.now
           data = depth_poll(net, 'btc', 'usd')
           puts "http transfer delay #{Time.now-now}s"
-          now = Time.now
-          puts "pumping mtgox #{data["asks"].size} asks"
-          msgs = offers(data, 'asks')
-          msgs.each {|msg| @zpub.write('E'+msg.to_json)}
-          puts "pumping mtgox #{data["bids"].size} bids"
-          msgs = offers(data, 'bids')
-          msgs.each {|msg| @zpub.write('E'+msg.to_json)}
-          puts "pump transfer delay #{Time.now-now}s"
+          if data["result"] == "success"
+            now = Time.now
+            offers = data["return"]
+            @zpub.write('W'+{exchange:@exchange}.to_json)
+            puts "pumping mtgox #{offers["asks"].size} asks"
+            msgs = offers(offers, 'asks')
+            msgs.each {|msg| @zpub.write('E'+msg.to_json)}
+            puts "pumping mtgox #{offers["bids"].size} bids"
+            msgs = offers(offers, 'bids')
+            msgs.each {|msg| @zpub.write('E'+msg.to_json)}
+            puts "pump transfer delay #{Time.now-now}s"
+          else
+            puts data.inspect
+          end
         end
       end
 
