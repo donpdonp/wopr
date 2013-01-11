@@ -9,7 +9,7 @@ module Wopr
     def websocket_mainloop
       @clients = {}
       port = 2000
-      puts "Websockets listening on port #{port}"
+      puts "websockets on http://localhost:#{port}"
       server = TCPServer.new 'localhost', port
       loop do
         handle_connection! server.accept
@@ -19,20 +19,21 @@ module Wopr
     def handle_connection(client)
       client_addr = client.peeraddr(:numeric)
       client_id = "#{client_addr[3]}:#{client_addr[1]}"
-      puts "ws client #{client_id}"
+      puts "websocket connection #{client_id}"
       handshake = WebSocket::Handshake::Server.new
       begin
         until handshake.finished?
           msg = client.readpartial(4096)
           handshake << msg
         end
-        puts "handshake valid: #{handshake.valid?}"
         if handshake.valid?
           @clients.update(client_id => {socket: client,
                                         ws_version: handshake.version,
                                         id: client_id})
           client.write handshake.to_s
           loop { read_frame(client_id) }
+        else
+          puts "websocket handshake invalid from #{client_id}"
         end
 
       rescue EOFError
@@ -55,13 +56,14 @@ module Wopr
     end
 
     def dispatch(client, msg)
-      puts "#{client[:id]} MSG #{msg.type}#{msg.type == :text ? ": #{msg}" : "."}"
+      puts "<-ws #{client[:id]} #{msg.type == :text ? msg : msg.type}"
       case msg.type
       when :ping
-        puts "ws ping"
+        puts "<-ws ping"
         out_frame = WebSocket::Frame::Outgoing::Server.new(:version => client[:ws_version],
                                                            :data => "",
                                                            :type => :pong)
+        puts "ws-> pong"
         client[:socket].write out_frame.to_s
 
       when :text
@@ -82,7 +84,7 @@ module Wopr
                   "type" => type,
                   "id" => 0}
       json_msg = json_rpc.to_json
-      puts "-> #{client[:id]} #{type}"
+      puts "ws-> #{client[:id]} #{type}"
       out_frame = WebSocket::Frame::Outgoing::Server.new(:version => client[:ws_version],
                                                          :data => json_msg,
                                                          :type => :text)

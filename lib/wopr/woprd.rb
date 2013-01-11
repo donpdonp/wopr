@@ -29,7 +29,7 @@ module Wopr
       @zsub.subscribe('W') #exchange wipe
       @zsub.subscribe('P') #performance messages
       db.table('exchanges').run.each do |exchange|
-        puts "woprd sub #{exchange["name"]} on #{exchange["zmq_pub"]}"
+        puts "woprd subcribed to #{exchange["name"]} on #{exchange["zmq_pub"]}"
         @zsub.connect(exchange["zmq_pub"])
       end
     end
@@ -54,13 +54,13 @@ module Wopr
     end
 
     def zmq_mainloop
-      puts "zmq listening"
+      puts "* zmq ready."
       loop { handle_message!(@zsub.read) }
     end
 
     def handle_message(json)
       code = json.slice!(0)
-      puts "<- #{@addr}: #{code} #{json}"
+      puts "<-zq #{@addr}: #{code} #{json}"
 
       msg = JSON.parse(json.force_encoding('UTF-8'))
       case code
