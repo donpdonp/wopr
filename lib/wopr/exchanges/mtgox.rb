@@ -23,8 +23,14 @@ module Wopr
 
         def depth_poll(conn, from_currency, to_currency)
           # covers two markets, from/to and to/from
-          url = "https://mtgox.com/api/1/#{from_currency.upcase}#{to_currency.upcase}/fulldepth"
-          JSON.parse(conn.get(url).body)
+          if File.exists?("mtgox.json")
+            puts "file cache"
+            body = File.open("mtgox.json"){|f| f.read}
+          else
+            url = "https://mtgox.com/api/1/#{from_currency.upcase}#{to_currency.upcase}/fulldepth"
+            body = conn.get(url).body
+          end
+          JSON.parse(body)
         end
 
         def offers(data, bidask)
@@ -42,13 +48,15 @@ module Wopr
 
         def offer_pump
           net = Faraday.new(request:{timeout:10})
-          puts "** mtgox http begin"
+          puts "** #{@exchange} begin"
           now = Time.now
           data = depth_poll(net, 'btc', 'usd')
           puts "http transfer delay #{Time.now-now}s"
           if data["result"] == "success"
             now = Time.now
             offers = data["return"]
+            puts "return data contains: #{offers.keys.join(' ')}"
+            puts "wiping #{@exchange}"
             @zpub.write('W'+{exchange:@exchange}.to_json)
             puts "pumping mtgox #{offers["asks"].size} asks"
             msgs = offers(offers, 'asks')
