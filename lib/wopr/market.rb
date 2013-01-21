@@ -33,9 +33,13 @@ class Market
     end
   end
 
+  def divide_offers_by(price)
+    @offers.span{|o| better_offer(o["price"],price)}
+  end
+
   # Mutators
   def sorted_insert(new_offer)
-    better_offers, worse_offers = @offers.span{|o| better_offer(new_offer["price"],o["price"])}
+    better_offers, worse_offers = divide_offers_by(new_offer["price"])
     closest_or_same_offer = better_offers.last
     if closest_or_same_offer && closest_or_same_offer["price"] == new_offer["price"]
       same_offer = closest_or_same_offer
@@ -48,7 +52,7 @@ class Market
       end
     else
       return if new_offer["quantity"] == 0 # bogus cancel
-      @offers = better_offers.cons(new_offer)+worse_offers
+      @offers = better_offers+worse_offers.cons(new_offer)
     end
     return better_offers.size
   end
