@@ -75,43 +75,49 @@ module Wopr
     end
 
     def depth(msg)
-      if msg["bidask"] == 'ask'
-        market = @asks
-      elsif msg["bidask"] == 'bid'
-        market = @bids
-      end
-      rank = market.sorted_insert(msg)
-      puts "sorted insert #{msg["bidask"]}: price #{msg["price"]} rank #{rank}/#{market.offers.size}  "
-      if rank == 0
-        if msg["volume"] == 0
-          puts "** best just got cancelled."
-          if market.offers.size == 0
-            puts "** last offer cancelled. empty market"
+      exclusive do
+        if msg["bidask"] == 'ask'
+          market = @asks
+        elsif msg["bidask"] == 'bid'
+          market = @bids
+        end
+        rank = market.sorted_insert(msg)
+        puts "sorted insert #{msg["bidask"]}: price #{msg["price"]} rank #{rank}/#{market.offers.size}  "
+        if rank == 0
+          if msg["volume"] == 0
+            puts "** best just got cancelled."
+            if market.offers.size == 0
+              puts "** last offer cancelled. empty market"
+            else
+              best = market.offers[0]
+              puts "** new second best #{best["bidask"]} #{best["exchange"]} #{best["price"]}"
+            end
           else
-            best = market.offers[0]
-            puts "** new second best #{best["bidask"]} #{best["exchange"]} #{best["price"]}"
+            puts "** new best #{msg["bidask"]} #{msg["exchange"]} #{msg["price"]}"
           end
-        else
-          puts "** new best #{msg["bidask"]} #{msg["exchange"]} #{msg["price"]}"
         end
       end
     end
 
     def profitable_bids
-      best_asks = @bids.better_than(@asks.best_price)
-      total_asks = best_asks.reduce(0){|total, offer| total + offer["price"]*offer["quantity"]}
-      puts "best ask price #{@asks.best_price} qualifying asks count #{best_asks.size}"
-      best_bids = @asks.better_than(@bids.best_price)
-      total_bids = best_bids.reduce(0){|total, offer| total + offer["price"]*offer["quantity"]}
-      puts "best bid price #{@bids.best_price} qualifying bids count #{best_bids.size}"
-      {asks: best_asks, total_asks:total_asks,
-       bids: best_bids, total_bids:total_bids}
+      exclusive do
+        best_asks = @bids.better_than(@asks.best_price)
+        total_asks = best_asks.reduce(0){|total, offer| total + offer["price"]*offer["quantity"]}
+        puts "best ask price #{@asks.best_price} qualifying asks count #{best_asks.size}"
+        best_bids = @asks.better_than(@bids.best_price)
+        total_bids = best_bids.reduce(0){|total, offer| total + offer["price"]*offer["quantity"]}
+        puts "best bid price #{@bids.best_price} qualifying bids count #{best_bids.size}"
+        {asks: best_asks, total_asks:total_asks,
+         bids: best_bids, total_bids:total_bids}
+       end
     end
 
     def wipe(exchange)
-      puts "Wiping exchange #{exchange}"
-      @bids.remove_exchange(exchange)
-      @asks.remove_exchange(exchange)
+      exclusive do
+        puts "Wiping exchange #{exchange}"
+        @bids.remove_exchange(exchange)
+        @asks.remove_exchange(exchange)
+      end
     end
   end
 

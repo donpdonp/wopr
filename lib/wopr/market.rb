@@ -62,6 +62,6 @@ class Market
   end
 
   def remove_exchange(exchange)
-    @offers.select{|o| o["exchange"] == exchange}.each{|o| @offers.delete(o)}
+    @offers = @offers.reject{|o| o["exchange"] == exchange}
   end
 end
