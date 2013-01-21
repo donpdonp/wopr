@@ -1,5 +1,5 @@
 require 'test/unit'
-require 'wopr/market'
+require 'wopr'
 
 class MarketTest  < Test::Unit::TestCase
   def setup
