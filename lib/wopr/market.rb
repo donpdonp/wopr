@@ -2,7 +2,7 @@ class Market
   attr_reader :offers
 
   def initialize(bidask)
-    @offers = []
+    @offers = Hamster.list
     @bidask = bidask
   end
 
@@ -25,40 +25,32 @@ class Market
     @offers.reduce(0){|total, offer| total + offer["price"]*offer["quantity"]}
   end
 
-  def sorted_insert(new_offer)
-    offer_rank = earliest_index(new_offer["price"])
-    if offer_rank < @offers.size
-      existing_offer = @offers[offer_rank]
-      if new_offer["price"] == existing_offer["price"]
-        #adjust volume
-        if new_offer["quantity"] == 0
-          @offers.delete_at(offer_rank)
-        else
-          existing_offer["quantity"] = new_offer["quantity"]
-        end
-        return offer_rank
-      end
+  def better_offer(price1, price2)
+    if @bidask == 'ask'
+      better = price1 <= price2
+    elsif @bidask == 'bid'
+      better = price1 >= price2
     end
-    return offer_rank if new_offer["quantity"] == 0 # wayward cancel
-    @offers.insert(offer_rank, new_offer)
-    offer_rank
   end
 
-  def earliest_index(price)
-    highest = nil
-    size = @offers.size
-    @offers.each_with_index do |offer, idx|
-      last = idx+1 == size
-      highest = idx
-      if @bidask == 'ask'
-        better = price <= offer["price"]
-      elsif @bidask == 'bid'
-        better = price >= offer["price"]
+  # Mutators
+  def sorted_insert(new_offer)
+    better_offers, worse_offers = @offers.span{|o| better_offer(o["price"],new_offer["price"])}
+    closest_or_same_offer = better_offers.last
+    if closest_or_same_offer && closest_or_same_offer["price"] == new_offer["price"]
+      same_offer = closest_or_same_offer
+      if new_offer["quantity"] == 0
+        # delete
+        @offers = better_offers.take(better_offers.size-1) + worse_offers
+      else
+        # adjust volume
+        same_offer["quantity"] = new_offer["quantity"]
       end
-      break if better
-      highest = size if last
+    else
+      return if new_offer["quantity"] == 0 # bogus cancel
+      @offers = better_offers.cons(new_offer)+worse_offers
     end
-    highest || 0
+    return better_offers.size
   end
 
   def remove_exchange(exchange)

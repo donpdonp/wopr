@@ -8,6 +8,7 @@ gem 'httparty'
 gem 'rethinkdb'
 gem 'faraday'
 gem 'uuid'
+gem 'hamster'
 
 group :development do
   gem 'pry'
