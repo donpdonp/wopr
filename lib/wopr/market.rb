@@ -35,7 +35,7 @@ class Market
 
   # Mutators
   def sorted_insert(new_offer)
-    better_offers, worse_offers = @offers.span{|o| better_offer(o["price"],new_offer["price"])}
+    better_offers, worse_offers = @offers.span{|o| better_offer(new_offer["price"],o["price"])}
     closest_or_same_offer = better_offers.last
     if closest_or_same_offer && closest_or_same_offer["price"] == new_offer["price"]
       same_offer = closest_or_same_offer
