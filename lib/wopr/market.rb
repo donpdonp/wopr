@@ -41,7 +41,8 @@ class Market
       same_offer = closest_or_same_offer
       if new_offer["quantity"] == 0
         # delete
-        @offers = better_offers.take(better_offers.size-1) + worse_offers
+        better_offers = better_offers.take(better_offers.size-1)
+        @offers = better_offers + worse_offers
       else
         # adjust volume
         same_offer["quantity"] = new_offer["quantity"]
@@ -54,6 +55,6 @@ class Market
   end
 
   def remove_exchange(exchange)
-    @offers.select{|o| o["exchange"] == exchange}.each{|o| @offers.delete(o)}
+    @offers = @offers.reject{|o| o["exchange"] == exchange}
   end
 end
