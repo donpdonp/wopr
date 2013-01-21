@@ -75,24 +75,26 @@ module Wopr
     end
 
     def depth(msg)
-      if msg["bidask"] == 'ask'
-        market = @asks
-      elsif msg["bidask"] == 'bid'
-        market = @bids
-      end
-      rank = market.sorted_insert(msg)
-      puts "#{msg["bidask"]} market insert: price #{msg["price"]} rank #{rank}/#{market.size}"
-      if rank == 0
-        if msg["volume"] == 0
-          puts "** best just got cancelled."
-          if market.size == 0
-            puts "** last offer cancelled. empty market"
+      exclusive do
+        if msg["bidask"] == 'ask'
+          market = @asks
+        elsif msg["bidask"] == 'bid'
+          market = @bids
+        end
+        rank = market.sorted_insert(msg)
+        puts "#{msg["bidask"]} market insert: price #{msg["price"]} rank #{rank}/#{market.size}"
+        if rank == 0
+          if msg["volume"] == 0
+            puts "** best just got cancelled."
+            if market.size == 0
+              puts "** last offer cancelled. empty market"
+            else
+              best = market.offers.head
+              puts "** new second best #{best["bidask"]} #{best["exchange"]} #{best["price"]}"
+            end
           else
-            best = market.offers.head
-            puts "** new second best #{best["bidask"]} #{best["exchange"]} #{best["price"]}"
+            puts "** new best #{msg["bidask"]} #{msg["exchange"]} #{msg["price"]}"
           end
-        else
-          puts "** new best #{msg["bidask"]} #{msg["exchange"]} #{msg["price"]}"
         end
       end
     end
