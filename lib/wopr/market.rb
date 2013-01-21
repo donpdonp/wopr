@@ -6,22 +6,18 @@ class Market
     @bidask = bidask
   end
 
-  def better_than(price)
-    if offers.size > 0 && price
-      range = 0..earliest_index(price)
-      offers[range]
-    else
-      []
-    end
-  end
-
   def best_price
-    if offers.size > 0
-      offers[0]["price"]
+    head = offers.head
+    if head
+      head["price"]
     end
   end
 
   def size
+    @offers.size
+  end
+
+  def value
     @offers.reduce(0){|total, offer| total + offer["price"]*offer["quantity"]}
   end
 

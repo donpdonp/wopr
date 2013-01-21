@@ -81,14 +81,14 @@ module Wopr
         market = @bids
       end
       rank = market.sorted_insert(msg)
-      puts "sorted insert #{msg["bidask"]}: price #{msg["price"]} rank #{rank}/#{market.offers.size}  "
+      puts "#{msg["bidask"]} market insert: price #{msg["price"]} rank #{rank}/#{market.size}"
       if rank == 0
         if msg["volume"] == 0
           puts "** best just got cancelled."
-          if market.offers.size == 0
+          if market.size == 0
             puts "** last offer cancelled. empty market"
           else
-            best = market.offers[0]
+            best = market.offers.head
             puts "** new second best #{best["bidask"]} #{best["exchange"]} #{best["price"]}"
           end
         else
@@ -98,14 +98,14 @@ module Wopr
     end
 
     def profitable_bids
-      best_asks = @bids.better_than(@asks.best_price)
+      best_asks, worst_asks = @bids.divide_offers_by(@asks.best_price)
       total_asks = best_asks.reduce(0){|total, offer| total + offer["price"]*offer["quantity"]}
       puts "best ask price #{@asks.best_price} qualifying asks count #{best_asks.size}"
-      best_bids = @asks.better_than(@bids.best_price)
+      best_bids, worst_bids = @asks.divide_offers_by(@bids.best_price)
       total_bids = best_bids.reduce(0){|total, offer| total + offer["price"]*offer["quantity"]}
       puts "best bid price #{@bids.best_price} qualifying bids count #{best_bids.size}"
-      {asks: best_asks, total_asks:total_asks,
-       bids: best_bids, total_bids:total_bids}
+      {asks: best_asks.to_a, total_asks:total_asks,
+       bids: best_bids.to_a, total_bids:total_bids}
     end
 
     def wipe(exchange)

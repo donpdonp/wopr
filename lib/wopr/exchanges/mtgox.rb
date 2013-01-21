@@ -101,8 +101,8 @@ end
 e1 = Wopr::Exchanges::Mtgox::Rest.new
 loop do
   e1.offer_pump
-  puts "sleeping 10\n"
-  sleep 10
+  puts "sleeping 30\n"
+  sleep 30
 end
 #mtgox_ws = Wopr::Exchanges::Mtgox::Websocket.new
 #mtgox_ws.async.websocket_connect

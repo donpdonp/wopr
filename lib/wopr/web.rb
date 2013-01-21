@@ -93,6 +93,7 @@ module Wopr
 
     def baseframe(client)
       offers = @woprd.profitable_bids
+      puts "web baseframe: profitable bids count #{offers[:bids].size}"
       push(client, 'load', offers)
     end
   end

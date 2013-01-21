@@ -7,8 +7,8 @@ function setup(wopr_sock) {
     rpc = JSON.parse(event.data)
     switch(rpc.type) {
       case "load":
-        console.log("[load "+rpc.response.asks.length+" "+
-                    rpc.response.bids.length+" ]")
+        console.log("[load asks:"+rpc.response.asks.length+" "+
+                    "bids:"+rpc.response.bids.length+"]")
         load_offers(rpc.response)
         break;
       case "offer":
