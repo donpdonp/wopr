@@ -21,7 +21,7 @@ class Market
     end
   end
 
-  def size
+  def value
     @offers.reduce(0){|total, offer| total + offer["price"]*offer["quantity"]}
   end
 

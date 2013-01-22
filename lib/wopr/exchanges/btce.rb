@@ -55,7 +55,5 @@ module Wopr
 end
 
 e1 = Wopr::Exchanges::Btce::Rest.new
-loop do
-  e1.offer_pump
-  sleep 5
-end
+e1.offer_pump
+e1.run
