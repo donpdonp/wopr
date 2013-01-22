@@ -7,21 +7,30 @@ class MarketTest  < Test::Unit::TestCase
   end
 
   def test_earliest_index
-    # prereq: empty list
-    assert_equal @bid_market.offers.size, 0
+    # prereq: one element list [10]
     @bid_market.sorted_insert({"price"=>10, "quantity"=>1})
+    assert_equal 1, @bid_market.offers.size
 
-    # first element
+    # same rank
     position = @bid_market.earliest_index(10)
-    assert_equal position, 0
+    assert_equal 0, position
 
-    # before
+    # better rank
     position = @bid_market.earliest_index(11)
-    assert_equal position, 0
+    assert_equal 0, position
 
-    # after
+    # worse rank
     position = @bid_market.earliest_index(9)
-    assert_equal position, 1
+    assert_equal 1, position
+
+    # prereq: two element list [10, 9]
+    @bid_market.sorted_insert({"price"=>9, "quantity"=>1})
+    assert_equal @bid_market.offers.size, 2
+
+    # same rank
+    position = @bid_market.earliest_index(9)
+    assert_equal 1, position
+
   end
 
   def test_sorted_insert

@@ -44,21 +44,26 @@ class Market
     offer_rank
   end
 
-  def earliest_index(price)
-    highest = nil
-    size = @offers.size
-    @offers.each_with_index do |offer, idx|
-      last = idx+1 == size
-      highest = idx
-      if @bidask == 'ask'
-        better = price <= offer["price"]
-      elsif @bidask == 'bid'
-        better = price >= offer["price"]
-      end
-      break if better
-      highest = size if last
+  def better_offer(price1, price2)
+    if @bidask == 'ask'
+      better = price1 < price2
+    elsif @bidask == 'bid'
+      better = price1 > price2
     end
-    highest || 0
+  end
+
+  def earliest_index(price)
+    highest = 0
+    # empty check
+    return highest if @offers.empty?
+    # worst check
+    return @offers.size if better_offer(@offers.last["price"], price)
+
+    @offers.each_with_index do |offer, idx|
+      highest = idx
+      break if better_offer(price, offer["price"])
+    end
+    highest
   end
 
   def remove_exchange(exchange)
