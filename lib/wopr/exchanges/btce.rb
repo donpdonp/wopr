@@ -15,6 +15,7 @@ module Wopr
         extend RethinkDB::Shortcuts
 
         def initialize
+          @exchange = "btce"
           db_setup(self.class.r)
           zmq_setup(PubSocket.new, SubSocket.new, "Btce")
         end
@@ -51,6 +52,8 @@ module Wopr
           puts "btce http"
           now = Time.now
           data = depth_poll(net, 'btc', 'usd')
+          puts "wiping #{@exchange}"
+          @zpub.write('W'+{exchange:@exchange}.to_json)
           puts "btce pump #{data["asks"].size} asks"
           offers(data, 'asks', now)
           puts "btce pump #{data["bids"].size} bids"
