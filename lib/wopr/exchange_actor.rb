@@ -18,7 +18,18 @@ module Wopr
       @zsub = sub
       puts "wopr sub on #{@addr}"
       @zsub.subscribe('W')
+      @zsub.subscribe('p')
       @zsub.connect(@addr)
+
+      pingpong
+    end
+
+    def pingpong
+      pinger = Pinger.new(@zpub)
+      pinger.go!
+      loop { break if @zsub.read == 'p{"ong":true}'}
+      pinger.terminate
+      puts "woprd ping/pong complete"
     end
 
     def db_setup(r)
@@ -36,6 +47,20 @@ module Wopr
 
     def handle_message(msg)
       puts "#{@addr}: #{msg}"
+    end
+
+    class Pinger
+      include Celluloid::ZMQ
+      def initialize(pub)
+        @pub = pub
+      end
+
+      def go
+        loop do
+          @pub.write('p{}')
+          sleep 0.01 #fast yes, crazy no
+        end
+      end
     end
   end
 end

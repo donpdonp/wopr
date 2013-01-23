@@ -28,6 +28,7 @@ module Wopr
       @zsub.subscribe('E') #exchange messages
       @zsub.subscribe('W') #exchange wipe
       @zsub.subscribe('P') #performance messages
+      @zsub.subscribe('p') #ping messages
       db.table('exchanges').run.each do |exchange|
         puts "woprd subcribed to #{exchange["name"]} on #{exchange["zmq_pub"]}"
         @zsub.connect(exchange["zmq_pub"])
@@ -71,7 +72,15 @@ module Wopr
         wipe(msg["exchange"])
       when "P" #Performance
         @wsock.send_all!('performance', msg)
+      when "p" #ping
+        puts 'got ping'
+        pub('p{"ong":true}')
       end
+    end
+
+    def pub(msg)
+      puts "-> #{msg}"
+      @zpub.write(msg)
     end
 
     def depth(msg)
