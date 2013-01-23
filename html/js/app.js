@@ -69,7 +69,7 @@ function load_offers(msg) {
 
   msg["bids"].forEach(function(msg) {
     var bid = offer_tmpl_data(msg)
-    $('#bids').prepend(template(bid))
+    $('#bids').append(template(bid))
   })
   $('#total-bids').html("$"+msg["total_bids"].toFixed(2))
 }
