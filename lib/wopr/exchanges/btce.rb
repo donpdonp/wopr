@@ -22,7 +22,12 @@ module Wopr
         def depth_poll(conn, from_currency, to_currency)
           # covers two markets, from/to and to/from
           url = 'https://btc-e.com/api/2/btc_usd/depth'
-          JSON.parse(conn.get(url).body)
+          json = conn.get(url).body
+          begin
+            JSON.parse(json)
+          rescue JSON::ParserError
+            puts "JSON error: #{json}"
+          end
         end
 
         def offers(data, bidask, now)
@@ -36,7 +41,9 @@ module Wopr
               currency: 'usd'
             }
           end
-          msgs.each {|msg| @zpub.write('E'+msg.to_json)}
+          msgs.each do |msg|
+            @zpub.write('E'+msg.to_json)
+          end
         end
 
         def offer_pump
@@ -46,7 +53,7 @@ module Wopr
           data = depth_poll(net, 'btc', 'usd')
           puts "btce pump #{data["asks"].size} asks"
           offers(data, 'asks', now)
-          puts "btce pump #{data["asks"].size} bids"
+          puts "btce pump #{data["bids"].size} bids"
           offers(data, 'bids', now)
         end
       end
