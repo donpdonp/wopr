@@ -38,7 +38,7 @@ module Wopr
 
       rescue EOFError
         @clients.delete(client_id)
-        puts "client EOF"
+        puts "client EOF #{client_id}"
       end
     end
 

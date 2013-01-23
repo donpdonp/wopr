@@ -114,9 +114,11 @@ module Wopr
 
     def wipe(exchange)
       exclusive do
-        puts "Wiping exchange #{exchange}"
+        before_asks = @asks.offers.size
+        before_bids = @bids.offers.size
         @bids.remove_exchange(exchange)
         @asks.remove_exchange(exchange)
+        puts "Wiped #{exchange} change: #{before_asks-@asks.offers.size} asks. #{before_bids-@bids.offers.size} bids."
       end
     end
   end
