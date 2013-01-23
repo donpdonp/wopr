@@ -29,6 +29,7 @@ module Wopr
           else
             url = "https://mtgox.com/api/1/#{from_currency.upcase}#{to_currency.upcase}/fulldepth"
             body = conn.get(url).body
+            File.open('mtgox.json','w'){|f| f.write body}
           end
           JSON.parse(body)
         end
