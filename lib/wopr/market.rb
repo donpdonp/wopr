@@ -15,9 +15,11 @@ class Market
     end
   end
 
-  def best_price
-    if offers.size > 0
-      offers[0]["price"]
+  def best
+    if offers.any?
+      offers.first
+    else
+      {"price" => nil, "exchange" => nil}
     end
   end
 
