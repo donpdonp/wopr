@@ -114,12 +114,13 @@ module Wopr
         best_ask = @asks.best
         best_asks = @asks.better_than(best_bid["price"])
         best_bids = @bids.better_than(best_ask["price"])
-        total_asks = best_asks.reduce(0){|total, offer| total + offer["price"]*offer["quantity"]}
+        total_asks_usd = best_asks.reduce(0){|total, offer| total + offer["price"]*offer["quantity"]}
+        total_asks_btc = best_asks.reduce(0){|total, offer| total + offer["quantity"]}
         puts "best ask price #{best_ask["price"]} #{best_ask["exchange"]} qualifying asks count #{best_asks.size}"
         total_bids = best_bids.reduce(0){|total, offer| total + offer["price"]*offer["quantity"]}
         puts "best bid price #{best_bid["price"]} #{@bids.best["exchange"]} qualifying bids count #{best_bids.size}"
-        {asks: best_asks, total_asks:total_asks,
-         bids: best_bids, total_bids:total_bids}
+        {asks: best_asks, total_asks_usd:total_asks_usd, total_asks_btc: total_asks_btc,
+         bids: best_bids, total_bids_usd:total_bids, total_bids_btc: 0}
        end
     end
 

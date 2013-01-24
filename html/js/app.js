@@ -63,15 +63,17 @@ function load_offers(msg) {
 
   msg["asks"].forEach(function(msg) {
     var bid = offer_tmpl_data(msg)
-    $('#asks').prepend(template(bid))
+    $('#asks .offers').prepend(template(bid))
   })
-  $('#total-asks').html("$"+msg["total_asks"].toFixed(2))
+  $('#asks .total-usd').html(msg["total_asks_usd"].toFixed(2))
+  $('#asks .total-btc').html(msg["total_asks_btc"].toFixed(2))
 
   msg["bids"].forEach(function(msg) {
     var bid = offer_tmpl_data(msg)
-    $('#bids').append(template(bid))
+    $('#bids .offers').append(template(bid))
   })
-  $('#total-bids').html("$"+msg["total_bids"].toFixed(2))
+  $('#bids .total-usd').html(msg["total_bids_usd"].toFixed(2))
+  $('#bids .total-btc').html(msg["total_bids_btc"].toFixed(2))
 }
 
 function offer_tmpl_data(msg) {
