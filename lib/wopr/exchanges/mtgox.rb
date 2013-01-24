@@ -18,7 +18,7 @@ module Wopr
         def initialize
           @exchange = "mtgox"
           db_setup(self.class.r)
-          zmq_setup(PubSocket.new, SubSocket.new, "Mtgox")
+          zmq_setup(PubSocket.new, SubSocket.new, @exchange)
         end
 
         def depth_poll(conn, from_currency, to_currency)

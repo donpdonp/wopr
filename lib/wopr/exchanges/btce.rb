@@ -17,7 +17,7 @@ module Wopr
         def initialize
           @exchange = "btce"
           db_setup(self.class.r)
-          zmq_setup(PubSocket.new, SubSocket.new, "Btce")
+          zmq_setup(PubSocket.new, SubSocket.new, @exchange)
         end
 
         def depth_poll(conn, from_currency, to_currency)

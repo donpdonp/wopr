@@ -6,6 +6,7 @@ module Wopr
     def initialize
       @bids = Market.new("bid")
       @asks = Market.new("ask")
+      @exchanges = {}
 
       @rdb_config = SETTINGS["wopr"]["rethinkdb"]
       db_setup
@@ -30,6 +31,7 @@ module Wopr
       @zsub.subscribe('P') #performance messages
       @zsub.subscribe('p') #ping messages
       db.table('exchanges').run.each do |exchange|
+        @exchanges[exchange["name"]] = exchange
         puts "woprd subcribed to #{exchange["name"]} on #{exchange["zmq_pub"]}"
         @zsub.connect(exchange["zmq_pub"])
       end
@@ -112,6 +114,7 @@ module Wopr
       exclusive do
         best_bid = @bids.best
         best_ask = @asks.best
+        puts "ask ex #{best_ask["exchange"]} #{@exchanges[best_ask["exchange"]]}"
         best_asks = @asks.better_than(best_bid["price"])
         best_bids = @bids.better_than(best_ask["price"])
         total_asks_usd = best_asks.reduce(0){|total, offer| total + offer["price"]*offer["quantity"]}
