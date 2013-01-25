@@ -16,11 +16,7 @@ class Market
   end
 
   def best
-    if offers.any?
-      offers.first
-    else
-      {"price" => nil, "exchange" => nil}
-    end
+    offers.first
   end
 
   def value

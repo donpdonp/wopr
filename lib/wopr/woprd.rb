@@ -114,16 +114,28 @@ module Wopr
       exclusive do
         best_bid = @bids.best
         best_ask = @asks.best
-        puts "ask ex #{best_ask["exchange"]} #{@exchanges[best_ask["exchange"]]}"
-        best_asks = @asks.better_than(best_bid["price"])
-        best_bids = @bids.better_than(best_ask["price"])
+        best_bid_price = nil
+        best_ask_price = nil
+        if best_bid && best_ask
+          puts "bid #{best_bid["exchange"]} #{@exchanges[best_bid["exchange"]]}"
+          puts "ask #{best_ask["exchange"]} #{@exchanges[best_ask["exchange"]]}"
+          best_bid_price = best_bid["price"] * (1-@exchanges[best_bid["exchange"]]["markets"]["btcusd"]["fee"])
+          best_ask_price = best_ask["price"] * (1+@exchanges[best_ask["exchange"]]["markets"]["btcusd"]["fee"])
+          best_bid_price *= 1-0.05
+          best_ask_price *= 1+1.05
+        end
+        best_asks = @asks.better_than(best_bid_price)
+        best_bids = @bids.better_than(best_ask_price)
         total_asks_usd = best_asks.reduce(0){|total, offer| total + offer["price"]*offer["quantity"]}
         total_asks_btc = best_asks.reduce(0){|total, offer| total + offer["quantity"]}
-        puts "best ask price #{best_ask["price"]} #{best_ask["exchange"]} qualifying asks count #{best_asks.size}"
         total_bids = best_bids.reduce(0){|total, offer| total + offer["price"]*offer["quantity"]}
-        puts "best bid price #{best_bid["price"]} #{@bids.best["exchange"]} qualifying bids count #{best_bids.size}"
+        if best_bid && best_ask
+          puts "best ask #{best_ask["exchange"]} $#{best_ask_price} qualifying asks count #{best_asks.size}"
+          puts "best bid #{best_bid["exchange"]} $#{best_bid_price} qualifying bids count #{best_bids.size}"
+        end
         {asks: best_asks, total_asks_usd:total_asks_usd, total_asks_btc: total_asks_btc,
-         bids: best_bids, total_bids_usd:total_bids, total_bids_btc: 0}
+         bids: best_bids, total_bids_usd:total_bids, total_bids_btc: 0,
+         profit: 0}
        end
     end
 

@@ -74,6 +74,7 @@ function load_offers(msg) {
   })
   $('#bids .total-usd').html(msg["total_bids_usd"].toFixed(2))
   $('#bids .total-btc').html(msg["total_bids_btc"].toFixed(2))
+  $('#profit').html(msg["profit"].toFixed(2))
 }
 
 function offer_tmpl_data(msg) {
