@@ -1,6 +1,6 @@
 {
-  "woprd": {
-    "addr" : "tcp://localhost:3095",
+  "wopr": {
+    "woprd": { "addr" : "tcp://127.0.0.1:3095"},
     "rethinkdb" : { "host": "localhost",
                     "port": "28015",
                     "db": "wopr"}
