@@ -29,7 +29,7 @@ module Wopr
       pinger.go!
       loop { break if @zsub.read == 'p{"ong":true}'}
       pinger.terminate
-      puts "woprd ping/pong complete"
+      puts "* ping/pong complete"
     end
 
     def db_setup(r)

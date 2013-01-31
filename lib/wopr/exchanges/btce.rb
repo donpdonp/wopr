@@ -49,7 +49,7 @@ module Wopr
 
         def offer_pump
           net = Faraday.new(request:{timeout:10})
-          puts "btce http"
+          puts "* btce http GO"
           now = Time.now
           data = depth_poll(net, 'btc', 'usd')
           puts "wiping #{@exchange}"
