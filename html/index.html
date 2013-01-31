@@ -8,18 +8,16 @@
   <title>WOPR Dashboard</title>
 </head>
 <body>
+ <div class="page">
   <div id="title">
     WOPR
   </div>
 
-  <div id="error">
+  <div class="steadyline" id="error">
   </div>
 
-  <div id="perf">
-  </div>
-
-  <div id="output">
-    <div class="market" id="asks">
+  <div>
+    <div class="pull-left" id="asks">
       <h3> asks </h3>
       <div>
         $<span class="total-usd"></span>
@@ -29,11 +27,11 @@
       </ul>
     </div>
 
-    <div class="market">
+    <div class="pull-left" id="opportunity">
       Opportunity $<span id="profit"/>
     </div>
 
-    <div class="market" id="bids">
+    <div class="pull-left" id="bids">
       <h3> bids </h3>
       <div>
         $<span class="total-usd"></span>
@@ -42,8 +40,16 @@
       <ul class="offers">
       </ul>
     </div>
-
   </div>
+
+  <div>
+    <div class="pull-right" id="exchanges">
+      <h3>Exchanges</h3>
+      <ul>
+      </ul>
+    </div>
+  </div>
+ </div>
 
 <script>
   var wopr_sock = new WebSocket("ws://localhost:2000");
@@ -55,6 +61,13 @@
     <span class="exchange">{{exchange}}</span>
     <span class="quantity">{{quantity}}</span>@
     <span class="price">${{price}}</span>
+  </li>
+</script>
+<script id="exchange-temp" type="text/x-handlebars-template">
+  <li id="perf-{{exchange}}">
+    <span class="exchange">{{exchange}}</span>
+    <time datetime="{{time}}">{{duration}}</time>ms
+    <span class="mps">{{mps}}mps</span>
   </li>
 </script>
 </body>

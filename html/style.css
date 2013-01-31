@@ -1,2 +1,20 @@
-#title { text-align: center;}
-.market {float: left; margin-right: 1em;}
+.page {
+  text-align: center;
+  width: 90%;
+  margin: auto;
+}
+
+.pull-left {
+  float: left;
+  margin-right: 1em;
+}
+
+.pull-right {
+  float: right;
+  margin-left: 1em;
+}
+
+.steadyline {
+  line-height: 1em;
+  border: solid 0.1em;
+}

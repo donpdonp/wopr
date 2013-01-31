@@ -1,7 +1,9 @@
 function setup(wopr_sock) {
+  var sweep_id;
   wopr_sock.onopen = function (event) {
     $('#title').css('background', '#0f0')
     wopr_sock.send("RELOAD");
+    sweep_id = setInterval(time_sweep, 1000)
   };
   wopr_sock.onmessage = function (event) {
     rpc = JSON.parse(event.data)
@@ -27,15 +29,40 @@ function setup(wopr_sock) {
   }
   wopr_sock.onclose = function (event) {
     $('#title').css('background', '#f00')
+    clearInterval(sweep_id)
   }
   wopr_sock.onerror = function (error) {
     console.log(error)
     $('#error').html(''+error.target.url+' failed')
+    clearInterval(sweep_id)
   }
 }
 
+function time_sweep() {
+  console.log("sweep!")
+  $('time').each(function(idx, el){
+    old_time = new Date($(el).attr('datetime'))
+    time_diff = (new Date()) - old_time
+    $(el).html(time_diff)
+  })
+}
+
 function show_performance(msg) {
-  $('#perf').html(msg)
+  //build
+  var html = $('#exchange-temp').html()
+  var template = Handlebars.compile(html)
+  msg.mps = msg.mps.toFixed(1)
+  msg.duration = (new Date()) - (new Date(msg.time))
+
+  // find
+  var ex_el = $('#perf-'+msg.exchange)
+  if(ex_el.length > 0) {
+    // replace
+    ex_el.html(template(msg))
+  } else {
+    // create
+    $('#exchanges ul').append(template(msg))
+  }
 }
 
 function show_size(msg) {
