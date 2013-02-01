@@ -66,6 +66,7 @@ module Wopr
             msgs = offers(offers, 'bids')
             msgs.each {|msg| @zpub.write('E'+msg.to_json)}
             puts "pump transfer delay #{Time.now-now}s"
+            perf_msg(now)
           else
             puts data.inspect
           end

@@ -1,5 +1,6 @@
 require 'celluloid/zmq'
 require 'json'
+require 'time'
 
 BASE_DIR = File.expand_path(File.dirname(__FILE__)+"/../../")
 SETTINGS = JSON.load(File.open(File.join(BASE_DIR,"config/settings.json")))
@@ -30,6 +31,16 @@ module Wopr
       loop { break if @zsub.read == 'p{"ong":true}'}
       pinger.terminate
       puts "* ping/pong complete"
+    end
+
+    def perf_msg(now)
+      puts "perf msg"
+      report = { exchange: @exchange,
+                      mps: 0,
+                   period: 0,
+                    count: 0,
+                     time: now.iso8601}
+      @zpub.write('P'+report.to_json)
     end
 
     def db_setup(r)
