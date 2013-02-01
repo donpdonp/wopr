@@ -39,7 +39,6 @@ function setup(wopr_sock) {
 }
 
 function time_sweep() {
-  console.log("sweep!")
   $('time').each(function(idx, el){
     old_time = new Date($(el).attr('datetime'))
     time_diff = (new Date()) - old_time

@@ -5,6 +5,7 @@ require 'json'
 require 'celluloid/io'
 require 'rethinkdb'
 require 'uuid'
+require 'time'
 
 module Wopr
   module Exchanges
@@ -58,6 +59,17 @@ module Wopr
           offers(data, 'asks', now)
           puts "btce pump #{data["bids"].size} bids"
           offers(data, 'bids', now)
+          perf_msg(now)
+        end
+
+        def perf_msg(now)
+          puts "perf msg"
+          report = { exchange: 'btce',
+                          mps: 0,
+                       period: 0,
+                        count: 0,
+                         time: now.iso8601}
+          @zpub.write('P'+report.to_json)
         end
       end
     end
