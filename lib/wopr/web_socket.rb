@@ -1,5 +1,5 @@
 module Wopr
-  class Web
+  class WebSocket
     include Celluloid::IO
 
     def initialize(woprd)
@@ -20,7 +20,7 @@ module Wopr
       client_addr = client.peeraddr(:numeric)
       client_id = "#{client_addr[3]}:#{client_addr[1]}"
       puts "websocket connection #{client_id}"
-      handshake = WebSocket::Handshake::Server.new
+      handshake = ::WebSocket::Handshake::Server.new
       begin
         until handshake.finished?
           msg = client.readpartial(4096)
@@ -44,7 +44,7 @@ module Wopr
 
     def read_frame(client_id)
       client = @clients[client_id]
-      frame = WebSocket::Frame::Incoming::Server.new(:version => client[:ws_version])
+      frame = ::WebSocket::Frame::Incoming::Server.new(:version => client[:ws_version])
       loop do
         data = client[:socket].readpartial(4096)
         frame << data
@@ -60,7 +60,7 @@ module Wopr
       case msg.type
       when :ping
         puts "<-ws ping"
-        out_frame = WebSocket::Frame::Outgoing::Server.new(:version => client[:ws_version],
+        out_frame = ::WebSocket::Frame::Outgoing::Server.new(:version => client[:ws_version],
                                                            :data => "",
                                                            :type => :pong)
         puts "ws-> pong"
@@ -85,7 +85,7 @@ module Wopr
                   "id" => 0}
       json_msg = json_rpc.to_json
       puts "ws-> #{client[:id]} #{type}"
-      out_frame = WebSocket::Frame::Outgoing::Server.new(:version => client[:ws_version],
+      out_frame = ::WebSocket::Frame::Outgoing::Server.new(:version => client[:ws_version],
                                                          :data => json_msg,
                                                          :type => :text)
       client[:socket].write out_frame.to_s

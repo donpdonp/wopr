@@ -5,7 +5,7 @@ require 'socket'
 require 'websocket'
 require 'uuid'
 require 'wopr/woprd'
-require 'wopr/web'
+require 'wopr/web_socket'
 require 'wopr/market'
 
 module Wopr

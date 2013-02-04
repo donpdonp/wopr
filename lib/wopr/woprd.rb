@@ -15,7 +15,7 @@ module Wopr
     end
 
     def websocket_start
-      Wopr::Web.supervise_as :wsock, self
+      Wopr::WebSocket.supervise_as :wsock, self
       @wsock = Celluloid::Actor[:wsock]
       @wsock.websocket_mainloop!
     end
