@@ -1,6 +1,7 @@
 module Wopr
   class WebSocket
     include Celluloid::IO
+    include Celluloid::Logger
 
     def initialize(woprd)
       @woprd = woprd
@@ -9,7 +10,7 @@ module Wopr
     def websocket_mainloop
       @clients = {}
       port = 2000
-      puts "websockets on http://localhost:#{port}"
+      info "* websocket listening on http://localhost:#{port}"
       server = TCPServer.new 'localhost', port
       loop do
         handle_connection! server.accept
@@ -19,7 +20,7 @@ module Wopr
     def handle_connection(client)
       client_addr = client.peeraddr(:numeric)
       client_id = "#{client_addr[3]}:#{client_addr[1]}"
-      puts "websocket connection #{client_id}"
+      info "websocket connection #{client_id}"
       handshake = ::WebSocket::Handshake::Server.new
       begin
         until handshake.finished?
@@ -33,12 +34,12 @@ module Wopr
           client.write handshake.to_s
           loop { read_frame(client_id) }
         else
-          puts "websocket handshake invalid from #{client_id}"
+          warn "websocket handshake invalid from #{client_id}"
         end
 
       rescue EOFError
         @clients.delete(client_id)
-        puts "client EOF #{client_id}"
+        info "client EOF #{client_id}"
       end
     end
 
@@ -56,14 +57,14 @@ module Wopr
     end
 
     def dispatch(client, msg)
-      puts "<-ws #{client[:id]} #{msg.type == :text ? msg : msg.type}"
+      info "<-ws #{client[:id]} #{msg.type == :text ? msg : msg.type}"
       case msg.type
       when :ping
-        puts "<-ws ping"
+        info "<-ws ping"
         out_frame = ::WebSocket::Frame::Outgoing::Server.new(:version => client[:ws_version],
                                                            :data => "",
                                                            :type => :pong)
-        puts "ws-> pong"
+        info "ws-> pong"
         client[:socket].write out_frame.to_s
 
       when :text
@@ -84,7 +85,7 @@ module Wopr
                   "type" => type,
                   "id" => 0}
       json_msg = json_rpc.to_json
-      puts "ws-> #{client[:id]} #{type}"
+      info "ws-> #{client[:id]} #{type}"
       out_frame = ::WebSocket::Frame::Outgoing::Server.new(:version => client[:ws_version],
                                                          :data => json_msg,
                                                          :type => :text)

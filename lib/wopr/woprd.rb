@@ -1,6 +1,7 @@
 module Wopr
   class Woprd
     include Celluloid::ZMQ
+    include Celluloid::Logger
     extend RethinkDB::Shortcuts
 
     def initialize
@@ -23,7 +24,6 @@ module Wopr
     def zmq_setup
       @addr = SETTINGS["wopr"]["woprd"]["addr"]
       @zpub = PubSocket.new
-      puts "woprd pub on #{@addr}"
       @zpub.bind(@addr)
 
       @zsub = SubSocket.new
@@ -33,7 +33,7 @@ module Wopr
       @zsub.subscribe('p') #ping messages
       db.table('exchanges').run.each do |exchange|
         @exchanges[exchange["name"]] = exchange
-        puts "woprd subcribed to #{exchange["name"]} on #{exchange["zmq_pub"]}"
+        info "woprd subcribed to #{exchange["name"]} on #{exchange["zmq_pub"]}"
         @zsub.connect(exchange["zmq_pub"])
       end
     end
@@ -45,20 +45,20 @@ module Wopr
     def db_setup
       unless self.class.r.db_list.run.include?(@rdb_config["db"])
         self.class.r.db_create(@rdb_config["db"]).run
-        puts "Warning: created database #{@rdb_config["db"]}"
+        warn "Warning: created database #{@rdb_config["db"]}"
       end
 
       unless db.table_list.run.include?('exchanges')
         db.table_create('exchanges').run
-        puts "Warning: created table 'exchanges'"
+        warn "Warning: created table 'exchanges'"
       end
 
       ecount = db.table('exchanges').count.run
-      puts "#{ecount} exchanges found"
+      info "#{ecount} exchanges found"
     end
 
     def zmq_mainloop
-      puts "* zmq ready."
+      info "* zmq listening #{SETTINGS["wopr"]["woprd"]["addr"]}"
       loop { handle_message!(@zsub.read) }
     end
 
@@ -76,7 +76,7 @@ module Wopr
       when "P" #Performance
         @wsock.send_all!('performance', msg)
       when "p" #ping
-        puts 'got ping'
+        debug 'got ping'
         pub('p{"ong":true}')
       end
     end
@@ -94,18 +94,18 @@ module Wopr
           market = @bids
         end
         rank = market.sorted_insert(msg)
-        puts "sorted insert #{msg["bidask"]}: price #{msg["price"]} rank #{rank}/#{market.offers.size}  "
+        info "sorted insert #{msg["bidask"]}: price #{msg["price"]} rank #{rank}/#{market.offers.size}  "
         if rank == 0
           if msg["volume"] == 0
-            puts "** best just got cancelled."
+            info "** best just got cancelled."
             if market.offers.size == 0
-              puts "** last offer cancelled. empty market"
+              info "** last offer cancelled. empty market"
             else
               best = market.offers[0]
-              puts "** new second best #{best["bidask"]} #{best["exchange"]} #{best["price"]}"
+              info "** new second best #{best["bidask"]} #{best["exchange"]} #{best["price"]}"
             end
           else
-            puts "** new best #{msg["bidask"]} #{msg["exchange"]} #{msg["price"]}"
+            info "** new best #{msg["bidask"]} #{msg["exchange"]} #{msg["price"]}"
           end
         end
       end
@@ -118,8 +118,8 @@ module Wopr
         best_bid_price = nil
         best_ask_price = nil
         if best_bid && best_ask
-          puts "bid #{best_bid["exchange"]} #{@exchanges[best_bid["exchange"]]}"
-          puts "ask #{best_ask["exchange"]} #{@exchanges[best_ask["exchange"]]}"
+          info "bid #{best_bid["exchange"]} #{@exchanges[best_bid["exchange"]]}"
+          info "ask #{best_ask["exchange"]} #{@exchanges[best_ask["exchange"]]}"
           best_bid_price = best_bid["price"] * (1-@exchanges[best_bid["exchange"]]["markets"]["btcusd"]["fee"])
           best_ask_price = best_ask["price"] * (1+@exchanges[best_ask["exchange"]]["markets"]["btcusd"]["fee"])
           best_bid_price *= 1-0.05
@@ -131,8 +131,8 @@ module Wopr
         total_asks_btc = best_asks.reduce(0){|total, offer| total + offer["quantity"]}
         total_bids = best_bids.reduce(0){|total, offer| total + offer["price"]*offer["quantity"]}
         if best_bid && best_ask
-          puts "best ask #{best_ask["exchange"]} $#{best_ask_price} qualifying asks count #{best_asks.size}"
-          puts "best bid #{best_bid["exchange"]} $#{best_bid_price} qualifying bids count #{best_bids.size}"
+          info "best ask #{best_ask["exchange"]} $#{best_ask_price} qualifying asks count #{best_asks.size}"
+          info "best bid #{best_bid["exchange"]} $#{best_bid_price} qualifying bids count #{best_bids.size}"
         end
         {asks: best_asks, total_asks_usd:total_asks_usd, total_asks_btc: total_asks_btc,
          bids: best_bids, total_bids_usd:total_bids, total_bids_btc: 0,
@@ -146,7 +146,7 @@ module Wopr
         before_bids = @bids.offers.size
         @bids.remove_exchange(exchange)
         @asks.remove_exchange(exchange)
-        puts "Wiped #{exchange} change: #{before_asks-@asks.offers.size} asks. #{before_bids-@bids.offers.size} bids."
+        info "Wiped #{exchange} change: #{before_asks-@asks.offers.size} asks. #{before_bids-@bids.offers.size} bids."
       end
     end
   end
