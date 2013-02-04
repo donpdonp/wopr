@@ -11,11 +11,12 @@ module Wopr
       @rdb_config = SETTINGS["wopr"]["rethinkdb"]
       db_setup
       zmq_setup
-      websocket_setup
+      websocket_start
     end
 
-    def websocket_setup
-      @wsock = Wopr::Web.new(self)
+    def websocket_start
+      Wopr::Web.supervise_as :wsock, self
+      @wsock = Celluloid::Actor[:wsock]
       @wsock.websocket_mainloop!
     end
 
