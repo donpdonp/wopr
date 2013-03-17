@@ -1,0 +1,47 @@
+#!/usr/bin/env rbx
+
+require 'bundler/setup'
+require 'httparty'
+require 'json'
+require 'trollop'
+
+parser = Trollop::Parser.new do
+    opt :live, "Make live requests"
+    banner <<-EOS
+Interact with bitinstant.net.
+$ bitinstant [quote]
+EOS
+end
+
+def quote
+  # Get Quote
+  url = "https://www.bitinstant.com/api/json/GetQuote"
+  #url = "http://localhost:6001"
+  quote = {  :dest_exchange => "mtgox",
+             :amount => 10.0,
+             :pay_method => "btcecoupon",
+             :currency => "USD"
+          }
+
+  resp = HTTParty.post url, :format => :json, :body => quote.to_json,
+                            :headers => { 'Content-Type' => 'application/json' }
+
+  puts resp.inspect
+end
+
+def dispatch(args)
+  case args[0]
+  when "quote"
+    quote
+  else
+    raise Trollop::HelpNeeded
+  end
+end
+
+opts = Trollop::with_standard_exception_handling(parser) do
+  raise Trollop::HelpNeeded if ARGV.empty? # show help screen
+  parser.parse ARGV
+  dispatch ARGV
+end
+
+
