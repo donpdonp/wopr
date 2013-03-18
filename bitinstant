@@ -4,27 +4,46 @@ require 'bundler/setup'
 require 'httparty'
 require 'json'
 require 'trollop'
+require 'xmlrpc/client'
 
 parser = Trollop::Parser.new do
     opt :live, "Make live requests"
     banner <<-EOS
 Interact with bitinstant.net.
-$ bitinstant [quote]
+$ bitinstant [fee|quote]
 EOS
 end
 
-def quote
-  # Get Quote
-  url = "https://www.bitinstant.com/api/json/GetQuote"
+def fee
+  url = "https://www.bitinstant.com/api/json/CalculateFee"
   #url = "http://localhost:6001"
   quote = {  :dest_exchange => "mtgox",
-             :amount => 10.0,
+             :amount => "122.01",
              :pay_method => "btcecoupon",
              :currency => "USD"
           }
 
+  puts quote.to_json
   resp = HTTParty.post url, :format => :json, :body => quote.to_json,
                             :headers => { 'Content-Type' => 'application/json' }
+  puts resp.inspect
+
+  rpc_url = "https://www.bitinstant.com/api/xmlrpc"
+  rpc = XMLRPC::Client.new_from_uri rpc_url
+  resp = rpc.call('CalculateFee', quote)
+  puts resp.inspect
+
+end
+
+def quote
+  rpc_url = "https://www.bitinstant.com/api/xmlrpc"
+  #rpc_url = "http://localhost:6001"
+
+  fee = {
+
+  }
+  rpc = XMLRPC::Client.new_from_uri rpc_url
+  resp = rpc.call('GetQuote', quote)
 
   puts resp.inspect
 end
@@ -33,6 +52,8 @@ def dispatch(args)
   case args[0]
   when "quote"
     quote
+  when "fee"
+    fee
   else
     raise Trollop::HelpNeeded
   end
