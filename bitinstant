@@ -14,46 +14,48 @@ $ bitinstant [fee|quote]
 EOS
 end
 
-def fee
-  url = "https://www.bitinstant.com/api/json/CalculateFee"
-  #url = "http://localhost:6001"
-  quote = {  :dest_exchange => "mtgox",
-             :amount => "122.01",
-             :pay_method => "btcecoupon",
-             :currency => "USD"
-          }
+rpc_url = "https://www.bitinstant.com/api/xmlrpc"
+@rpc = XMLRPC::Client.new_from_uri rpc_url
 
-  puts quote.to_json
-  resp = HTTParty.post url, :format => :json, :body => quote.to_json,
+def rest_post(path, params)
+  rest_url = "https://www.bitinstant.com/api/json/"
+  puts params.to_json
+  resp = HTTParty.post rest_url+path, :format => :json, :body => params.to_json,
                             :headers => { 'Content-Type' => 'application/json' }
-  puts resp.inspect
-
-  rpc_url = "https://www.bitinstant.com/api/xmlrpc"
-  rpc = XMLRPC::Client.new_from_uri rpc_url
-  resp = rpc.call('CalculateFee', quote)
-  puts resp.inspect
-
 end
 
-def quote
-  rpc_url = "https://www.bitinstant.com/api/xmlrpc"
-  #rpc_url = "http://localhost:6001"
+def fee(pay_method, dest_exchange, amount)
+  params = [pay_method, dest_exchange, amount, 'usd']
+  resp = @rpc.call('CalculateFee', *params)
+  puts resp.inspect
+end
 
-  fee = {
-
-  }
-  rpc = XMLRPC::Client.new_from_uri rpc_url
-  resp = rpc.call('GetQuote', quote)
-
+def quote(pay_method, amount, dest_exchange, dest_account, email)
+  #params = [pay_method, amount, dest_exchange, dest_account]
+  #resp = @rpc.call('GetQuote', *params)
+  params = { :pay_method => pay_method,
+             :amount => amount,
+             :dest_exchange => dest_exchange,
+             :dest_account => dest_account,
+             :notify_email => email }
+  resp = rest_post('GetQuote', params)
   puts resp.inspect
 end
 
 def dispatch(args)
   case args[0]
   when "quote"
-    quote
+    if args.length > 1
+      quote(args[1], args[2], args[3], args[4], args[5])
+    else
+      puts "bitinstant quote <payment_method> <amount> <dest_exchange> <dest_account> <email>"
+    end
   when "fee"
-    fee
+    if args.length > 1
+      fee(args[1], args[2], args[3])
+    else
+      puts "bitinstant fee <payment_method> <dest_exchange> <amount>"
+    end
   else
     raise Trollop::HelpNeeded
   end
