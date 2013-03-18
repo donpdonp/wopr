@@ -1,3 +1,4 @@
+#!/bin/sh
 RBX=rbx
 
 $RBX -Ilib lib/wopr/cli.rb $*
