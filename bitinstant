@@ -1,10 +1,8 @@
 #!/usr/bin/env rbx
-
+$: << "lib"
 require 'bundler/setup'
-require 'httparty'
-require 'json'
 require 'trollop'
-require 'xmlrpc/client'
+require 'wopr/exchanges/bitinstant'
 
 parser = Trollop::Parser.new do
     opt :live, "Make live requests"
@@ -14,56 +12,19 @@ $ bitinstant [fee|quote]
 EOS
 end
 
-@rest_url = "https://www.bitinstant.com/api/json/"
-rpc_url = "https://www.bitinstant.com/api/xmlrpc"
-@rpc = XMLRPC::Client.new_from_uri rpc_url
-
-def rest_post(path, params)
-  puts params.to_json
-  resp = HTTParty.post @rest_url+path, :format => :json, :body => params.to_json,
-                            :headers => { 'Content-Type' => 'application/json' }
-  resp.parsed_response
-end
-
-def rest_get(path, ordered_keys, params)
-  puts params.to_json
-  ordered_keys.each{|k| path += "/#{params[k]}"}
-  resp = HTTParty.get @rest_url+path, :format => :json
-  resp.parsed_response
-end
-
-def fee(pay_method, dest_exchange, amount)
-  params = {:pay_method => pay_method,
-            :dest_exchange => dest_exchange,
-            :amount => amount,
-            :currency => 'usd'}
-  ordered_keys = [:pay_method, :dest_exchange, :amount, :currency]
-  resp = rest_get('CalculateFee', ordered_keys, params)
-end
-
-def quote(pay_method, amount, dest_exchange, dest_account, email)
-  #params = [pay_method, amount, dest_exchange, dest_account]
-  #resp = @rpc.call('GetQuote', *params)
-  params = { :pay_method => pay_method,
-             :amount => amount,
-             :dest_exchange => dest_exchange,
-             :dest_account => dest_account,
-             :notify_email => email }
-  resp = rest_post('GetQuote', params)
-  puts resp.inspect
-end
-
 def dispatch(args)
   case args[0]
   when "quote"
     if args.length > 1
-      quote(args[1], args[2], args[3], args[4], args[5])
+      resp = Wopr::Exchanges::Bitinstant::Rest.quote(args[1], args[2], args[3], args[4], args[5])
+      puts resp
     else
       puts "bitinstant quote <payment_method> <amount> <dest_exchange> <dest_account> <email>"
     end
   when "fee"
     if args.length > 1
-      fee(args[1], args[2], args[3])
+      resp = Wopr::Exchanges::Bitinstant::Rest.fee(args[1], args[2], args[3])
+      puts resp
     else
       puts "bitinstant fee <payment_method> <dest_exchange> <amount>"
     end
