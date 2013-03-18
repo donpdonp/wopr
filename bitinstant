@@ -14,20 +14,30 @@ $ bitinstant [fee|quote]
 EOS
 end
 
+@rest_url = "https://www.bitinstant.com/api/json/"
 rpc_url = "https://www.bitinstant.com/api/xmlrpc"
 @rpc = XMLRPC::Client.new_from_uri rpc_url
 
 def rest_post(path, params)
-  rest_url = "https://www.bitinstant.com/api/json/"
   puts params.to_json
-  resp = HTTParty.post rest_url+path, :format => :json, :body => params.to_json,
+  resp = HTTParty.post @rest_url+path, :format => :json, :body => params.to_json,
                             :headers => { 'Content-Type' => 'application/json' }
 end
 
+def rest_get(path, ordered_keys, params)
+  puts params.to_json
+  ordered_keys.each{|k| path += "/#{params[k]}"}
+  resp = HTTParty.get @rest_url+path, :format => :json
+  resp.parsed_response
+end
+
 def fee(pay_method, dest_exchange, amount)
-  params = [pay_method, dest_exchange, amount, 'usd']
-  resp = @rpc.call('CalculateFee', *params)
-  puts resp.inspect
+  params = {:pay_method => pay_method,
+            :dest_exchange => dest_exchange,
+            :amount => amount,
+            :currency => 'usd'}
+  ordered_keys = [:pay_method, :dest_exchange, :amount, :currency]
+  resp = rest_get('CalculateFee', ordered_keys, params)
 end
 
 def quote(pay_method, amount, dest_exchange, dest_account, email)
