@@ -22,6 +22,7 @@ def rest_post(path, params)
   puts params.to_json
   resp = HTTParty.post @rest_url+path, :format => :json, :body => params.to_json,
                             :headers => { 'Content-Type' => 'application/json' }
+  resp.parsed_response
 end
 
 def rest_get(path, ordered_keys, params)
