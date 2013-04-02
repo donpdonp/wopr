@@ -8,7 +8,7 @@ parser = Trollop::Parser.new do
     opt :live, "Make live requests"
     banner <<-EOS
 Interact with bitinstant.net.
-$ bitinstant [fee|quote]
+$ bitinstant [fee|quote|callback|order]
 EOS
 end
 
@@ -27,6 +27,20 @@ def dispatch(args)
       puts resp
     else
       puts "bitinstant fee <payment_method> <dest_exchange> <amount>"
+    end
+  when "callback"
+    if args.length > 1
+      resp = Wopr::Exchanges::Bitinstant::Rest.callback(args[1], args[2])
+      puts resp
+    else
+      puts "bitinstant callback <quote_id> <url>"
+    end
+  when "order"
+    if args.length > 1
+      resp = Wopr::Exchanges::Bitinstant::Rest.order(args[1], args[2], args[3])
+      puts resp
+    else
+      puts "bitinstant order <payment_method> <quote_id> <code>"
     end
   else
     raise Trollop::HelpNeeded

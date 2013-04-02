@@ -1,5 +1,6 @@
 require 'httparty'
 require 'json'
+require 'cgi'
 require 'xmlrpc/client'
 
 module Wopr
@@ -9,6 +10,7 @@ module Wopr
         @@rest_url = "https://www.bitinstant.com/api/json/"
 
         def self.rest_post(path, params)
+          puts "POST #{@@rest_url+path}"
           puts params.to_json
           resp = HTTParty.post @@rest_url+path, :format => :json, :body => params.to_json,
                                     :headers => { 'Content-Type' => 'application/json' }
@@ -17,7 +19,8 @@ module Wopr
 
         def self.rest_get(path, ordered_keys, params)
           puts params.to_json
-          ordered_keys.each{|k| path += "/#{params[k]}"}
+          ordered_keys.each{|k| path += "/"+CGI.escape(params[k])}
+          puts "GET #{@@rest_url+path}"
           resp = HTTParty.get @@rest_url+path, :format => :json
           resp.parsed_response
         end
@@ -43,6 +46,19 @@ module Wopr
           puts resp.inspect
         end
 
+        def self.callback(quote_id, url)
+          params = {:quote_id => quote_id,
+                    :url => url}
+          ordered_keys = [:quote_id, :url]
+          resp = rest_get('SubscribeEvents', ordered_keys, params)
+        end
+
+        def self.order(pay_method, quote_id, code)
+          params = {:pay_method => pay_method,
+                    :quote_id => quote_id,
+                    :code => code}
+          resp = rest_post('NewOrder', params)
+        end
       end
 
       class XmlRpc
